@@ -40,11 +40,22 @@ export default function Shop({ onAddToCart, wishlistIds, onToggleWishlist }: Sho
     }
   }, [categoryParam]);
 
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ["all-products-for-price"],
+    queryFn: () => getProducts()
+  });
+
+  const absoluteMaxPrice = allProducts.length > 0 
+    ? Math.max(...allProducts.map((p: any) => p.price)) 
+    : 100;
+  
+  const step = Math.max(10, Math.ceil(absoluteMaxPrice / 4 / 10) * 10);
+
   const priceRanges = [
-    { id: "0-75", min: 0, max: 75, label: "Under $75" },
-    { id: "75-125", min: 75, max: 125, label: "$75 - $125" },
-    { id: "125-200", min: 125, max: 200, label: "$125 - $200" },
-    { id: "200-inf", min: 200, max: undefined, label: "Over $200" },
+    { id: `0-${step}`, min: 0, max: step, label: `Under $${step}` },
+    { id: `${step}-${step*2}`, min: step, max: step*2, label: `$${step} - $${step*2}` },
+    { id: `${step*2}-${step*3}`, min: step*2, max: step*3, label: `$${step*2} - $${step*3}` },
+    { id: `${step*3}-inf`, min: step*3, max: undefined, label: `Over $${step*3}` },
   ];
 
   const handlePriceChange = (rangeId: string, checked: boolean) => {
