@@ -204,3 +204,34 @@ export const createOrder = async (orderData: any): Promise<{ success: boolean }>
     if (error) throw error;
     return { success: true };
 };
+
+export const getOrders = async () => {
+    const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return data.map((o: any) => ({
+        id: o.id,
+        firstName: o.first_name,
+        lastName: o.last_name,
+        email: o.email,
+        phone: o.phone,
+        address: o.address,
+        city: o.city,
+        region: o.region,
+        total: o.total,
+        items: o.items,
+        status: o.status,
+        createdAt: o.created_at
+    }));
+};
+
+export const updateOrderStatus = async (id: string, status: string) => {
+    const { data, error } = await supabase.from('orders').update({ status }).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const deleteOrder = async (id: string) => {
+    const { error } = await supabase.from('orders').delete().eq('id', id);
+    if (error) throw error;
+    return { success: true };
+};

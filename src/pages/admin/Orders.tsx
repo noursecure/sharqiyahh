@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, MessageCircle, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@/api";
+import { getOrders, updateOrderStatus, deleteOrder } from "@/api";
 import { generateInvoice } from "@/utils/invoiceGenerator";
 import {
     Select,
@@ -24,19 +24,7 @@ import {
 } from "@/components/ui/select";
 import { format } from "date-fns";
 
-const getOrders = async () => {
-    const response = await api.get('/orders');
-    return response.data;
-};
-
-const updateStatus = async ({ id, status }: { id: string; status: string }) => {
-    const response = await api.put(`/orders/${id}/status`, { status });
-    return response.data;
-}
-
-const deleteOrder = async (id: string) => {
-    await api.delete(`/orders/${id}`);
-};
+// Removed old Axios wrappers since we are importing them directly from "@/api"
 
 export default function AdminOrders() {
     const queryClient = useQueryClient();
@@ -49,7 +37,7 @@ export default function AdminOrders() {
     });
 
     const mutation = useMutation({
-        mutationFn: updateStatus,
+        mutationFn: ({ id, status }: { id: string; status: string }) => updateOrderStatus(id, status),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["orders"] });
             toast.success("Order status updated");
