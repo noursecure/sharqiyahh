@@ -188,3 +188,19 @@ export const updateSettings = async (settings: Record<string, string>): Promise<
     if (error) throw error;
     return { success: true };
 };
+
+export const createOrder = async (orderData: any): Promise<{ success: boolean }> => {
+    const { error } = await supabase.from('orders').insert([{
+        first_name: orderData.firstName,
+        last_name: orderData.lastName,
+        email: orderData.email,
+        phone: orderData.phone,
+        address: orderData.address,
+        city: orderData.city,
+        region: orderData.region,
+        total: orderData.total,
+        items: orderData.items
+    }]);
+    if (error) throw error;
+    return { success: true };
+};

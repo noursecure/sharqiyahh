@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, CreditCard, Truck, Shield } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { api } from "@/api";
+import { createOrder } from "@/api";
 
 interface CartItem {
   id: string;
@@ -51,7 +51,7 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
     };
 
     try {
-      await api.post('/orders', orderData);
+      await createOrder(orderData);
 
       toast({
         title: "Order Placed Successfully!",
