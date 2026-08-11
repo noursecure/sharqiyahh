@@ -29,16 +29,16 @@ export default function AdminLogin() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const { token } = await loginAdmin({ username, password });
-            if (token) {
-                localStorage.setItem("adminToken", token);
+            const data = await loginAdmin({ email: username, password });
+            if (data?.session) {
+                localStorage.setItem("adminToken", data.session.access_token);
                 toast({ title: "Logged in successfully" });
                 navigate("/admin/dashboard");
             }
         } catch (error: any) {
             toast({ 
                 title: "Login failed", 
-                description: error.response?.data?.message || "Invalid credentials", 
+                description: error.message || "Invalid credentials", 
                 variant: "destructive" 
             });
         } finally {
