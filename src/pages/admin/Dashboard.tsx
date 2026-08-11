@@ -443,7 +443,7 @@ export default function AdminDashboard() {
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         {categories?.map((category: Category) => (
-                                                            <SelectItem key={category.id} value={category.name}>
+                                                            <SelectItem key={category.id} value={category.id}>
                                                                 {category.name}
                                                             </SelectItem>
                                                         ))}
@@ -569,7 +569,7 @@ export default function AdminDashboard() {
                         <SelectContent>
                             <SelectItem value="all">All Categories</SelectItem>
                             {categories?.map((category: any) => (
-                                <SelectItem key={category.id} value={category.name}>
+                                <SelectItem key={category.id} value={category.id}>
                                     {category.name}
                                 </SelectItem>
                             ))}
@@ -612,7 +612,9 @@ export default function AdminDashboard() {
                                 <div className="text-xs text-muted-foreground truncate" dir="rtl">{product.nameAr}</div>
                             </div>
                             <div className="col-span-2">
-                                <Badge variant="secondary" className="font-normal">{product.category}</Badge>
+                                <Badge variant="secondary" className="font-normal">
+                                    {categories?.find(c => c.id === product.category)?.name || product.category}
+                                </Badge>
                             </div>
                             <div className="col-span-2">
                                 <span className="font-medium">${product.price}</span>
