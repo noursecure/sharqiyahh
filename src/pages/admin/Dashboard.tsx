@@ -64,8 +64,9 @@ export default function AdminDashboard() {
             resetForm();
             toast({ title: "Product created successfully" });
         },
-        onError: () => {
-            toast({ title: "Failed to create product", variant: "destructive" });
+        onError: (error: any) => {
+            console.error(error);
+            toast({ title: "Failed to create product", description: error?.message || "Unknown error", variant: "destructive" });
         }
     });
 
