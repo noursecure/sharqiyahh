@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  name          String
+  nameAr        String
+  price         Float
+  originalPrice Float?
+  image         String
+  category      String
+  description   String?
+  descriptionAr String?
+  stock         Int      @default(0)
+  colors        String   @default("") // Comma separated values
+  images        String   @default("") // Comma separated values for additional images
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Admin {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  nameAr    String
+  image     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String
+  phone     String
+  address   String
+  city      String
+  region    String
+  total     Float
+  status    String      @default("Pending") // Pending, Processing, Completed, Cancelled
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  // We store product details at time of order in case product changes
+  productName String 
+  productImage String
+  price     Float
+  quantity  Int
+}
+
+model Subscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  key   String @id
+  value String
+}
