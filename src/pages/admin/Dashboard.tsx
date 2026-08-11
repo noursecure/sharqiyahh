@@ -99,8 +99,9 @@ export default function AdminDashboard() {
             queryClient.invalidateQueries({ queryKey: ["settings"] });
             toast({ title: "Settings updated successfully" });
         },
-        onError: () => {
-            toast({ title: "Failed to update settings", variant: "destructive" });
+        onError: (error: any) => {
+            console.error(error);
+            toast({ title: "Failed to update settings", description: error?.message || "Unknown error", variant: "destructive" });
         }
     });
 
