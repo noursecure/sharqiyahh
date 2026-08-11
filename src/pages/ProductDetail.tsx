@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 // Removed hardcoded product imports and array in favor of API fetching
 
-import { getProducts } from "@/api";
+import { getProducts, getCategories } from "@/api";
 
 interface ProductDetailProps {
   onAddToCart: (product: any) => void; // Changed to accept full product object
@@ -54,6 +54,11 @@ export default function ProductDetail({ onAddToCart, wishlistIds, onToggleWishli
     queryKey: ["products", product?.category],
     queryFn: () => getProducts(product?.category),
     enabled: !!product?.category
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories
   });
 
   const relatedProducts = allProducts
@@ -149,7 +154,7 @@ export default function ProductDetail({ onAddToCart, wishlistIds, onToggleWishli
           {/* Product Info */}
           <div>
             <p className="text-sm text-muted-foreground uppercase tracking-wide mb-2">
-              {product.category}
+              {categories.find(c => c.id === product.category)?.name || product.category}
             </p>
             <h1 className="text-3xl md:text-4xl font-serif font-bold mb-2">{product.name}</h1>
             <p className="text-lg text-muted-foreground mb-4">{product.nameAr}</p>
@@ -290,6 +295,7 @@ export default function ProductDetail({ onAddToCart, wishlistIds, onToggleWishli
             <ProductCard
               key={relatedProduct.id}
               {...relatedProduct}
+              category={categories.find(c => c.id === relatedProduct.category)?.name || relatedProduct.category}
               onAddToCart={() => onAddToCart(relatedProduct)}
               isWishlisted={wishlistIds.includes(relatedProduct.id)}
               onToggleWishlist={() => onToggleWishlist(relatedProduct)}

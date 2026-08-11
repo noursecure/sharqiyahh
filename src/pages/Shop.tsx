@@ -247,6 +247,7 @@ export default function Shop({ onAddToCart, wishlistIds, onToggleWishlist }: Sho
                   <ProductCard
                     key={product.id}
                     {...product}
+                    category={categories.find((c: any) => c.id === product.category)?.name || product.category}
                     onAddToCart={() => onAddToCart(product)}
                     isWishlisted={wishlistIds.includes(product.id)}
                     onToggleWishlist={() => onToggleWishlist(product)}

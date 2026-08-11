@@ -84,6 +84,7 @@ export default function Home({ onAddToCart, wishlistIds, onToggleWishlist }: Hom
               <ProductCard
                 key={product.id}
                 {...product}
+                category={categories.find((c: any) => c.id === product.category)?.name || product.category}
                 onAddToCart={() => onAddToCart(product)}
                 isWishlisted={wishlistIds.includes(product.id)}
                 onToggleWishlist={() => onToggleWishlist(product)}
