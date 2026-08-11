@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getSettings } from "@/api";
+import { getSettings, getCategories } from "@/api";
 import logoDefault from "@/assets/logo.png";
 import {
   Sheet,
@@ -29,6 +29,11 @@ export const Navbar = ({ cartCount, wishlistCount, onCartOpen }: NavbarProps) =>
   const { data: settings } = useQuery({ 
     queryKey: ["settings"], 
     queryFn: getSettings 
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories
   });
 
   const logo = settings?.siteLogo || logoDefault;
@@ -74,48 +79,16 @@ export const Navbar = ({ cartCount, wishlistCount, onCartOpen }: NavbarProps) =>
                       Shop
                     </Link>
                     <div className="h-px bg-border my-2" />
-                    <Link
-                      to="/shop?category=dresses"
-                      className="text-lg hover:text-primary transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Dresses
-                    </Link>
-                    <Link
-                      to="/shop?category=abayas"
-                      className="text-lg hover:text-primary transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Abayas
-                    </Link>
-                    <Link
-                      to="/shop?category=tops"
-                      className="text-lg hover:text-primary transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Tops
-                    </Link>
-                    <Link
-                      to="/shop?category=trousers"
-                      className="text-lg hover:text-primary transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Trousers
-                    </Link>
-                    <Link
-                      to="/shop?category=chemise"
-                      className="text-lg hover:text-primary transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Chemise
-                    </Link>
-                    <Link
-                      to="/shop?category=basics"
-                      className="text-lg hover:text-primary transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Basics
-                    </Link>
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        to={`/shop?category=${cat.id}`}
+                        className="text-lg hover:text-primary transition-colors"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
                   </div>
                 </SheetContent>
               </Sheet>
@@ -135,24 +108,11 @@ export const Navbar = ({ cartCount, wishlistCount, onCartOpen }: NavbarProps) =>
             <Link to="/shop" className="text-sm hover:text-accent-foreground transition-colors">
               Shop
             </Link>
-            <Link to="/shop?category=dresses" className="text-sm hover:text-accent-foreground transition-colors">
-              Dresses
-            </Link>
-            <Link to="/shop?category=abayas" className="text-sm hover:text-accent-foreground transition-colors">
-              Abayas
-            </Link>
-            <Link to="/shop?category=tops" className="text-sm hover:text-accent-foreground transition-colors">
-              Tops
-            </Link>
-            <Link to="/shop?category=trousers" className="text-sm hover:text-accent-foreground transition-colors">
-              Trousers
-            </Link>
-            <Link to="/shop?category=chemise" className="text-sm hover:text-accent-foreground transition-colors">
-              Chemise
-            </Link>
-            <Link to="/shop?category=basics" className="text-sm hover:text-accent-foreground transition-colors">
-              Basics
-            </Link>
+            {categories.slice(0, 6).map((cat) => (
+              <Link key={cat.id} to={`/shop?category=${cat.id}`} className="text-sm hover:text-accent-foreground transition-colors">
+                {cat.name}
+              </Link>
+            ))}
           </div>
 
           {/* Icons */}

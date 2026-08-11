@@ -8,52 +8,10 @@ import product3 from "@/assets/product-3.jpg";
 import product4 from "@/assets/product-4.jpg";
 
 import { useQuery } from "@tanstack/react-query";
-import { getProducts, subscribeToNewsletter } from "@/api";
+import { getProducts, subscribeToNewsletter, getCategories } from "@/api";
 import { toast } from "@/hooks/use-toast";
 
 // ... (imports remain)
-
-// Removed hardcoded featuredProducts array
-
-
-const categories = [
-  {
-    name: "Dresses",
-    nameAr: "فساتين",
-    image: product2,
-    link: "/shop?category=dresses",
-  },
-  {
-    name: "Abayas",
-    nameAr: "عبايات",
-    image: product1,
-    link: "/shop?category=abayas",
-  },
-  {
-    name: "Tops",
-    nameAr: "بلوزات",
-    image: product4,
-    link: "/shop?category=tops",
-  },
-  {
-    name: "Trousers",
-    nameAr: "بناطيل",
-    image: product3,
-    link: "/shop?category=trousers",
-  },
-  {
-    name: "Chemise",
-    nameAr: "شيميز",
-    image: product4,
-    link: "/shop?category=chemise",
-  },
-  {
-    name: "Basics",
-    nameAr: "أساسيات",
-    image: product1,
-    link: "/shop?category=basics",
-  },
-];
 
 interface HomeProps {
   onAddToCart: (productId: string) => void;
@@ -66,6 +24,13 @@ export default function Home({ onAddToCart, wishlistIds, onToggleWishlist }: Hom
     queryKey: ["featured"],
     queryFn: () => getProducts()
   });
+
+  const { data: categoriesData, isLoading: isCategoriesLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories
+  });
+
+  const categories = categoriesData || [];
 
   // Take first 4 for featured
   const featuredProducts = products?.slice(0, 4) || [];
@@ -81,23 +46,27 @@ export default function Home({ onAddToCart, wishlistIds, onToggleWishlist }: Hom
           <p className="text-muted-foreground">تسوقي حسب الفئة</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {categories.map((category) => (
-            <Link key={category.name} to={category.link} className="group">
-              <div className="relative aspect-[3/4] overflow-hidden rounded hover-lift">
-                <img
-                  src={category.image}
-                  alt={category.name}
-                  className="w-full h-full object-cover transition-elegant group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent flex items-end p-6">
-                  <div className="text-center w-full">
-                    <h3 className="text-2xl font-serif font-bold mb-1">{category.name}</h3>
-                    <p className="text-sm text-muted-foreground">{category.nameAr}</p>
+          {isCategoriesLoading ? (
+            <div className="col-span-3 text-center py-10">Loading categories...</div>
+          ) : (
+            categories.map((category) => (
+              <Link key={category.id} to={`/shop?category=${category.id}`} className="group">
+                <div className="relative aspect-[3/4] overflow-hidden rounded hover-lift">
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="w-full h-full object-cover transition-elegant group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent flex items-end p-6">
+                    <div className="text-center w-full">
+                      <h3 className="text-2xl font-serif font-bold mb-1">{category.name}</h3>
+                      <p className="text-sm text-muted-foreground">{category.name_ar}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))
+          )}
         </div>
       </section>
 

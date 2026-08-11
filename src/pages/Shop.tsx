@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sheet";
 
 import { useQuery } from "@tanstack/react-query";
-import { getProducts } from "@/api";
+import { getProducts, getCategories } from "@/api";
 import type { APIProduct } from "@/types";
 
 interface ShopProps {
@@ -74,14 +74,14 @@ export default function Shop({ onAddToCart, wishlistIds, onToggleWishlist }: Sho
 
   const filteredProducts = Array.isArray(products) ? products : [];
 
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories
+  });
+
   const filterCategories = [
     { id: "all", label: "All Products", labelAr: "جميع المنتجات" },
-    { id: "dresses", label: "Dresses", labelAr: "فساتين" },
-    { id: "abayas", label: "Abayas", labelAr: "عبايات" },
-    { id: "tops", label: "Tops", labelAr: "بلوزات" },
-    { id: "trousers", label: "Trousers", labelAr: "بناطيل" },
-    { id: "chemise", label: "Chemise", labelAr: "شيميز" },
-    { id: "basics", label: "Basics", labelAr: "أساسيات" },
+    ...categories.map(c => ({ id: c.id, label: c.name, labelAr: c.name_ar }))
   ];
 
   if (isError) {
