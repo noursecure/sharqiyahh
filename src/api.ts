@@ -184,7 +184,7 @@ export const getSettings = async (): Promise<Record<string, string>> => {
 
 export const updateSettings = async (settings: Record<string, string>): Promise<{ success: boolean }> => {
     const updates = Object.entries(settings).map(([key, value]) => ({ key, value }));
-    const { error } = await supabase.from('settings').upsert(updates);
+    const { error } = await supabase.from('settings').upsert(updates, { onConflict: 'key' });
     if (error) throw error;
     return { success: true };
 };
