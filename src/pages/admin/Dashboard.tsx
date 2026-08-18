@@ -4,7 +4,8 @@ import { getProducts, createProduct, deleteProduct, updateProduct, uploadImage, 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, X, Settings as SettingsIcon, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, Edit, X, Settings as SettingsIcon, Image as ImageIcon, QrCode } from "lucide-react";
+import QRCode from "qrcode";
 import {
     Dialog,
     DialogContent,
@@ -26,6 +27,24 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+
+const downloadQrCode = async (product: { id: string; name: string }) => {
+    const productUrl = `${window.location.origin}/product/${product.id}`;
+    try {
+        const dataUrl = await QRCode.toDataURL(productUrl, {
+            width: 512,
+            margin: 2,
+            color: { dark: "#1a1a1a", light: "#ffffff" },
+        });
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = `${product.name.replace(/\s+/g, "-").toLowerCase()}-qr.png`;
+        link.click();
+        toast({ title: "QR Code downloaded", description: `Linked to /product/${product.id}` });
+    } catch {
+        toast({ title: "Failed to generate QR code", variant: "destructive" });
+    }
+};
 
 export default function AdminDashboard() {
     const queryClient = useQueryClient();
@@ -632,6 +651,9 @@ export default function AdminDashboard() {
                                 )}
                             </div>
                             <div className="col-span-2 flex justify-end gap-1">
+                                <Button variant="ghost" size="icon" onClick={() => downloadQrCode(product)} className="h-8 w-8 hover:bg-blue-50 text-blue-600" title="Download QR Code">
+                                    <QrCode className="h-4 w-4" />
+                                </Button>
                                 <Button variant="ghost" size="icon" onClick={() => handleEdit(product)} className="h-8 w-8 hover:bg-brand-beige" title="Edit">
                                     <Edit className="h-4 w-4" />
                                 </Button>
