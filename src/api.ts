@@ -59,7 +59,7 @@ export const createProduct = async (data: Omit<Product, 'id'>): Promise<APIProdu
         name_ar: data.nameAr,
         price: data.price,
         original_price: data.originalPrice,
-        category_id: data.category,
+        category_id: data.category || null,
         image: data.image,
         images: data.images,
         description: data.description,
@@ -78,7 +78,7 @@ export const updateProduct = async (id: string, data: Partial<Product>): Promise
     if (data.nameAr !== undefined) dbData.name_ar = data.nameAr;
     if (data.price !== undefined) dbData.price = data.price;
     if (data.originalPrice !== undefined) dbData.original_price = data.originalPrice;
-    if (data.category !== undefined) dbData.category_id = data.category;
+    if (data.category !== undefined) dbData.category_id = data.category || null;
     if (data.image !== undefined) dbData.image = data.image;
     if (data.images !== undefined) dbData.images = data.images;
     if (data.description !== undefined) dbData.description = data.description;
