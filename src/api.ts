@@ -20,7 +20,7 @@ const mapProduct = (p: any): APIProduct => ({
 });
 
 export const getProducts = async (category?: string, search?: string, minPrice?: number, maxPrice?: number): Promise<APIProduct[]> => {
-    let query = supabase.from('products').select('*');
+    let query = supabase.from('products').select('*').order('created_at', { ascending: false });
 
     if (category && category !== 'all') {
         query = query.eq('category_id', category);
