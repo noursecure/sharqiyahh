@@ -110,20 +110,37 @@ export const getCategories = async (): Promise<Category[]> => {
     }
     return (data || []).map((c: any) => ({
         ...c,
+        nameAr: c.name_ar,
         image: optimizeImage(c.image, 800)
     }));
 };
 
 export const createCategory = async (data: Omit<Category, 'id'>): Promise<Category> => {
-    const { data: result, error } = await supabase.from('categories').insert([data]).select().single();
+    const dbData = {
+        name: data.name,
+        name_ar: data.nameAr,
+        image: data.image
+    };
+    const { data: result, error } = await supabase.from('categories').insert([dbData]).select().single();
     if (error) throw error;
-    return result;
+    return {
+        ...result,
+        nameAr: result.name_ar
+    };
 };
 
 export const updateCategory = async (id: string, data: Partial<Category>): Promise<Category> => {
-    const { data: result, error } = await supabase.from('categories').update(data).eq('id', id).select().single();
+    const dbData: any = {};
+    if (data.name !== undefined) dbData.name = data.name;
+    if (data.nameAr !== undefined) dbData.name_ar = data.nameAr;
+    if (data.image !== undefined) dbData.image = data.image;
+
+    const { data: result, error } = await supabase.from('categories').update(dbData).eq('id', id).select().single();
     if (error) throw error;
-    return result;
+    return {
+        ...result,
+        nameAr: result.name_ar
+    };
 };
 
 export const deleteCategory = async (id: string): Promise<{ success: boolean }> => {
