@@ -55,7 +55,7 @@ export const Navbar = ({ cartCount, wishlistCount, onCartOpen }: NavbarProps) =>
             <div className="md:hidden">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" aria-label="Open menu">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -133,6 +133,7 @@ export const Navbar = ({ cartCount, wishlistCount, onCartOpen }: NavbarProps) =>
                   size="icon"
                   className="absolute right-4 top-1/2 -translate-y-1/2 md:right-0 md:top-0 md:translate-y-0 md:h-full md:w-8"
                   onClick={() => setIsSearchOpen(false)}
+                  aria-label="Close search"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -142,11 +143,12 @@ export const Navbar = ({ cartCount, wishlistCount, onCartOpen }: NavbarProps) =>
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsSearchOpen(true)}
+                aria-label="Open search"
               >
                 <Search className="h-5 w-5" />
               </Button>
             )}
-            <Link to="/wishlist">
+            <Link to="/wishlist" aria-label="Wishlist">
               <Button variant="ghost" size="icon" className="relative">
                 <Heart className="h-5 w-5" />
                 {wishlistCount > 0 && (
@@ -156,7 +158,7 @@ export const Navbar = ({ cartCount, wishlistCount, onCartOpen }: NavbarProps) =>
                 )}
               </Button>
             </Link>
-            <Button variant="ghost" size="icon" className="relative" onClick={onCartOpen}>
+            <Button variant="ghost" size="icon" className="relative" onClick={onCartOpen} aria-label="Cart">
               <ShoppingBag className="h-5 w-5" />
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center">

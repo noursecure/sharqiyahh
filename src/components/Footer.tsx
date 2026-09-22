@@ -18,6 +18,7 @@ export const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-accent-foreground transition-colors"
+                aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
               </a>
@@ -26,12 +27,14 @@ export const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-accent-foreground transition-colors"
+                aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5" />
               </a>
               <a
                 href="mailto:info@sharqiyahh.com"
                 className="hover:text-accent-foreground transition-colors"
+                aria-label="Email Us"
               >
                 <Mail className="h-5 w-5" />
               </a>
