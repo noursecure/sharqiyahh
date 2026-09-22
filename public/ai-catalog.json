@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "name": "Sharqiyah",
+  "description": "Elegant Modest Fashion",
+  "resources": [
+    {
+      "type": "website",
+      "url": "https://sharqiyahh.vercel.app/",
+      "description": "Sharqiyah Storefront"
+    }
+  ]
+}
