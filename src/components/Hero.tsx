@@ -53,16 +53,16 @@ export const Hero = () => {
           {heroSubtitle}
         </p>
         <div className="flex gap-4 justify-center flex-wrap">
-          <Link to="/shop">
-            <Button size="lg" className="text-base px-8">
+          <Button size="lg" className="text-base px-8" asChild>
+            <Link to="/shop">
               Shop Now
-            </Button>
-          </Link>
-          <Link to="/shop?filter=new">
-            <Button size="lg" variant="outline" className="text-base px-8">
+            </Link>
+          </Button>
+          <Button size="lg" variant="outline" className="text-base px-8" asChild>
+            <Link to="/shop?filter=new">
               New Arrivals
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
     </section>

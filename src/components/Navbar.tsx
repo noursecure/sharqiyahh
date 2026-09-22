@@ -148,16 +148,16 @@ export const Navbar = ({ cartCount, wishlistCount, onCartOpen }: NavbarProps) =>
                 <Search className="h-5 w-5" />
               </Button>
             )}
-            <Link to="/wishlist" aria-label="Wishlist">
-              <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative" asChild aria-label="Wishlist">
+              <Link to="/wishlist">
                 <Heart className="h-5 w-5" />
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center">
                     {wishlistCount}
                   </span>
                 )}
-              </Button>
-            </Link>
+              </Link>
+            </Button>
             <Button variant="ghost" size="icon" className="relative" onClick={onCartOpen} aria-label="Cart">
               <ShoppingBag className="h-5 w-5" />
               {cartCount > 0 && (
