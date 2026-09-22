@@ -58,7 +58,7 @@ export const WhatsAppWidget = () => {
                             rel="noopener noreferrer"
                             className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-2.5 rounded-full font-semibold transition-all hover:shadow-lg"
                         >
-                            <img src={whatsappIcon} className="w-5 h-5 brightness-0 invert" alt="WhatsApp" />
+                            <img src={whatsappIcon} className="w-5 h-5 object-contain brightness-0 invert" alt="WhatsApp" />
                             Chat on WhatsApp
                         </a>
                     </div>
@@ -69,10 +69,10 @@ export const WhatsAppWidget = () => {
             <div className="flex items-center gap-4 group">
                 <button
                     onClick={toggleWidget}
-                    className="bg-black hover:bg-gray-900 text-white p-3.5 rounded-full shadow-lg transition-all hover:scale-110 flex items-center justify-center w-14 h-14"
+                    className="bg-black hover:bg-gray-900 text-white rounded-full shadow-lg transition-all hover:scale-110 flex items-center justify-center w-14 h-14"
                     aria-label="Chat on WhatsApp"
                 >
-                    <img src={whatsappIcon} className="w-8 h-8 brightness-0 invert" alt="WhatsApp" />
+                    <img src={whatsappIcon} className="w-8 h-8 object-contain brightness-0 invert" alt="WhatsApp" />
                 </button>
 
                 <div className="bg-white px-4 py-2 rounded-lg shadow-md text-sm font-medium text-gray-800 transition-opacity opacity-100 hidden md:block">
