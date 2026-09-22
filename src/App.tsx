@@ -3,26 +3,27 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { CartSlideout } from "@/components/CartSlideout";
 import { WhatsAppWidget } from "@/components/WhatsAppWidget";
-import Home from "./pages/Home";
-import Shop from "./pages/Shop";
-import ProductDetail from "./pages/ProductDetail";
-import Checkout from "./pages/Checkout";
-import Wishlist from "./pages/Wishlist";
-import NotFound from "./pages/NotFound";
-import { toast } from "@/hooks/use-toast";
+const Home = lazy(() => import("./pages/Home"));
+const Shop = lazy(() => import("./pages/Shop"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const Wishlist = lazy(() => import("./pages/Wishlist"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
-import AdminLogin from "./pages/admin/Login";
-import AdminDashboard from "./pages/admin/Dashboard";
-import AdminLayout from "@/components/admin/AdminLayout";
-import Categories from "./pages/admin/Categories";
-import AdminOrders from "./pages/admin/Orders";
-import Subscribers from "./pages/admin/Subscribers";
+const AdminLogin = lazy(() => import("./pages/admin/Login"));
+const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const AdminLayout = lazy(() => import("@/components/admin/AdminLayout"));
+const Categories = lazy(() => import("./pages/admin/Categories"));
+const AdminOrders = lazy(() => import("./pages/admin/Orders"));
+const Subscribers = lazy(() => import("./pages/admin/Subscribers"));
+
+import { toast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient();
 
@@ -144,22 +145,24 @@ const AppContent = () => {
     <div className="min-h-screen flex flex-col">
       {!isAdminPage && <Navbar cartCount={cartCount} wishlistCount={wishlistCount} onCartOpen={() => setCartOpen(true)} />}
       <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<Home onAddToCart={handleAddToCart} wishlistIds={wishlistIds} onToggleWishlist={handleToggleWishlist} />} />
-          <Route path="/shop" element={<Shop onAddToCart={handleAddToCart} wishlistIds={wishlistIds} onToggleWishlist={handleToggleWishlist} />} />
-          <Route path="/product/:id" element={<ProductDetail onAddToCart={handleAddToCart} wishlistIds={wishlistIds} onToggleWishlist={handleToggleWishlist} />} />
-          <Route path="/checkout" element={<Checkout items={cartItems} onClearCart={handleClearCart} />} />
-          <Route path="/wishlist" element={<Wishlist items={wishlistItems} onRemove={handleRemoveFromWishlist} onAddToCart={handleAddToCart} />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="categories" element={<Categories />} />
-            <Route path="subscribers" element={<Subscribers />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+          <Routes>
+            <Route path="/" element={<Home onAddToCart={handleAddToCart} wishlistIds={wishlistIds} onToggleWishlist={handleToggleWishlist} />} />
+            <Route path="/shop" element={<Shop onAddToCart={handleAddToCart} wishlistIds={wishlistIds} onToggleWishlist={handleToggleWishlist} />} />
+            <Route path="/product/:id" element={<ProductDetail onAddToCart={handleAddToCart} wishlistIds={wishlistIds} onToggleWishlist={handleToggleWishlist} />} />
+            <Route path="/checkout" element={<Checkout items={cartItems} onClearCart={handleClearCart} />} />
+            <Route path="/wishlist" element={<Wishlist items={wishlistItems} onRemove={handleRemoveFromWishlist} onAddToCart={handleAddToCart} />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="categories" element={<Categories />} />
+              <Route path="subscribers" element={<Subscribers />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </main>
       {!isAdminPage && <Footer />}
       {!isAdminPage && (

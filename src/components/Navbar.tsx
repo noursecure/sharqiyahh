@@ -96,7 +96,7 @@ export const Navbar = ({ cartCount, wishlistCount, onCartOpen }: NavbarProps) =>
 
             {/* Logo */}
             <Link to="/" className="flex items-center">
-              <img src={logo} alt="Sharqiyah" className="h-24 w-auto object-contain" />
+              <img src={logo} alt="Sharqiyah" width="192" height="96" className="h-24 w-auto object-contain" />
             </Link>
           </div>
 
