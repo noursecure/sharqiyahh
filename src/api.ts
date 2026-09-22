@@ -1,6 +1,15 @@
 import { supabase } from './lib/supabase';
 import type { Product, Category, APIProduct } from './types';
 
+// Helper to transform Supabase public URL into an optimized render URL
+export const optimizeImage = (url: string | null, width: number = 800): string => {
+    if (!url) return '';
+    if (url.includes('/storage/v1/object/public/')) {
+        return url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + `?width=${width}&format=webp&quality=80`;
+    }
+    return url;
+};
+
 // Helper to map DB Product to APIProduct
 const mapProduct = (p: any): APIProduct => ({
     id: p.id,
@@ -9,8 +18,8 @@ const mapProduct = (p: any): APIProduct => ({
     price: p.price,
     originalPrice: p.original_price,
     category: p.category_id,
-    image: p.image,
-    images: p.images,
+    image: optimizeImage(p.image),
+    images: p.images ? p.images.map((img: string) => optimizeImage(img, 1000)) : [],
     description: p.description,
     descriptionAr: p.description_ar,
     stock: p.stock,
@@ -103,7 +112,10 @@ export const getCategories = async (): Promise<Category[]> => {
         console.error('Error fetching categories:', error);
         return [];
     }
-    return data;
+    return (data || []).map((c: any) => ({
+        ...c,
+        image: optimizeImage(c.image, 800)
+    }));
 };
 
 export const createCategory = async (data: Omit<Category, 'id'>): Promise<Category> => {
@@ -176,7 +188,12 @@ export const getSettings = async (): Promise<Record<string, string>> => {
     const settings: Record<string, string> = {};
     if (data) {
         data.forEach((setting: any) => {
-            settings[setting.key] = setting.value;
+            if (setting.key === 'heroBanner' && setting.value) {
+                const optimizedBanners = setting.value.split(',').map((url: string) => optimizeImage(url.trim(), 1920)).join(',');
+                settings[setting.key] = optimizedBanners;
+            } else {
+                settings[setting.key] = setting.value;
+            }
         });
     }
     return settings;
