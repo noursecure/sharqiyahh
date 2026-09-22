@@ -29,13 +29,16 @@ export const Hero = () => {
   return (
     <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
       {bannerImages.map((image: string, index: number) => (
-        <div
-          key={index}
-          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
-            index === currentIndex ? "opacity-100" : "opacity-0"
-          }`}
-          style={{ backgroundImage: `url("${image}")` }}
-        />
+          <img
+            key={index}
+            src={image}
+            alt="Hero Banner"
+            fetchPriority={index === 0 ? "high" : "auto"}
+            loading={index === 0 ? "eager" : "lazy"}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+              index === currentIndex ? "opacity-100" : "opacity-0"
+            }`}
+          />
       ))}
       <div className="absolute inset-0 bg-gradient-to-r from-background/90 to-background/40" />
       
