@@ -33,7 +33,7 @@ export function Sidebar({ className }: { className?: string }) {
     return (
         <div className={cn("w-64 bg-card border-r min-h-screen p-4 flex flex-col shadow-sm", className)}>
             <div className="mb-8 px-4 flex flex-col items-center">
-                <img src={logo} alt="Sharqiyah" className="h-20 w-auto mb-2 object-contain" />
+                <img src={logo} alt="Sharqiyah" width="160" height="80" className="h-20 w-auto mb-2 object-contain" />
                 <h2 className="text-sm font-serif font-bold tracking-widest uppercase text-muted-foreground">Admin Portal</h2>
             </div>
             <nav className="space-y-1">

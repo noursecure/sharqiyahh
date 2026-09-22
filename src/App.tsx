@@ -144,8 +144,8 @@ const AppContent = () => {
   return (
     <div className="min-h-screen flex flex-col">
       {!isAdminPage && <Navbar cartCount={cartCount} wishlistCount={wishlistCount} onCartOpen={() => setCartOpen(true)} />}
-      <main className="flex-1">
-        <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+      <main className="flex-1 flex flex-col min-h-[calc(100vh-250px)]">
+        <Suspense fallback={<div className="flex flex-1 items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
           <Routes>
             <Route path="/" element={<Home onAddToCart={handleAddToCart} wishlistIds={wishlistIds} onToggleWishlist={handleToggleWishlist} />} />
             <Route path="/shop" element={<Shop onAddToCart={handleAddToCart} wishlistIds={wishlistIds} onToggleWishlist={handleToggleWishlist} />} />
