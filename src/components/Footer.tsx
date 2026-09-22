@@ -10,7 +10,7 @@ export const Footer = () => {
           <div>
             <h3 className="text-xl font-serif font-bold mb-4">Sharqiyah</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Elegant modest fashion for the modern woman
+             Your Smart, Modest, Feminine collection
             </p>
             <div className="flex gap-3">
               <a

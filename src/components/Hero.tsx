@@ -6,7 +6,7 @@ import { getSettings } from "@/api";
 import heroBannerDefault from "@/assets/hero-banner.jpg";
 
 export const Hero = () => {
-  const { data: settings } = useQuery({ 
+  const { data: settings, isLoading } = useQuery({ 
     queryKey: ["settings"], 
     queryFn: getSettings 
   });
@@ -39,7 +39,7 @@ export const Hero = () => {
       ))}
       <div className="absolute inset-0 bg-gradient-to-r from-background/90 to-background/40" />
       
-      <div className="relative z-10 text-center max-w-3xl px-4 animate-fade-in">
+      <div className={`relative z-10 text-center max-w-3xl px-4 transition-opacity duration-700 ${isLoading ? 'opacity-0' : 'opacity-100 animate-fade-in'}`}>
         <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 tracking-tight whitespace-pre-line">
           {heroTitle}
         </h1>
