@@ -4,6 +4,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 import viteCompression from 'vite-plugin-compression';
+import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -31,7 +32,8 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     viteCompression({ algorithm: 'gzip', ext: '.gz' }),
-    viteCompression({ algorithm: 'brotliCompress', ext: '.br' })
+    viteCompression({ algorithm: 'brotliCompress', ext: '.br' }),
+    cssInjectedByJsPlugin()
   ].filter(Boolean),
   resolve: {
     alias: {
