@@ -57,6 +57,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             hour12: true
         }).format(new Date());
 
+        // Validate and clean city. Must be a recognized city in Lebanon. Fallback to Beirut if unknown.
+        let city = (params.city || '').trim();
+        if (!city || city.length < 2) {
+            city = 'Beirut';
+        }
+
+        const customerPhone = (params.customerPhone || '70112112').replace(/[^\d+]/g, '');
+
         const payload = {
             OrderTypeId: 1,
             OrderReference: params.orderId,
@@ -76,21 +84,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 Email: params.customerEmail || "customer@sharqiyahh.com",
                 Address: {
                     Country: "Lebanon",
-                    City: params.city || "Beirut",
-                    Street: params.address || "Main Street",
-                    Building: "Building",
-                    Floor: "",
+                    City: city,
+                    Street: params.address || "Street 1",
+                    Building: "Building 1",
+                    Floor: "1st floor",
                     LandMark: "",
                     ZipCode: "",
                     POBox: "",
-                    GeoLocation: "",
+                    GeoLocation: "URL",
                     PhoneType: "mobile",
-                    PhoneNumber: params.customerPhone || "+961",
+                    PhoneNumber: customerPhone,
                     Ext: "",
                     Contact: {
-                        ContactType: "Recipient",
+                        ContactType: "Owner",
                         ContactName: params.customerName || "Customer",
-                        MobileNumber: params.customerPhone || "+961",
+                        MobileNumber: customerPhone,
                         Email: params.customerEmail || "customer@sharqiyahh.com"
                     }
                 }
@@ -98,12 +106,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             OrderInternationalTypeId: 2,
             ShipmentTermsId: 1,
             BusinessTypeId: 2,
-            shipmentReason: "E-Commerce Delivery",
-            Notes: params.notes || "",
+            shipmentReason: "",
+            Notes: params.notes || "Sharqiyah Order",
             EORI: "",
             Cod: [
                 {
-                    Amount: params.amount,
+                    Amount: Math.round(Number(params.amount) || 50),
                     Currency: params.currency || "USD",
                     PaymentMethodId: 1
                 }
@@ -112,20 +120,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 {
                     OrderReference: `${params.orderId}-P1`,
                     CreatedDate: formattedDate,
-                    Length: 30,
+                    Length: 10,
                     Width: 20,
-                    Height: 10,
+                    Height: 30,
                     Weight: 1,
                     Items: [
                         {
                             Description: params.itemDescription || "Sharqiyah Abaya / Dress",
-                            HsCode: "6204",
-                            SKU: "ABY-01",
-                            GoodsValue: params.amount,
+                            HsCode: "HSCODE 1",
+                            SKU: "1235467",
+                            GoodsValue: Math.round(Number(params.amount) || 50),
                             Currency: params.currency || "USD",
                             CountryOfOrigin: "Lebanon",
                             Quantity: params.quantity || 1,
-                            ProductURL: "https://www.sharqiyahh.com"
+                            ProductURL: "www.sharqiyahh.com"
                         }
                     ]
                 }
@@ -147,6 +155,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         try {
             resultData = JSON.parse(textResponse);
         } catch (e) {
+            // Check if server error contains governorateId
+            if (textResponse.includes('governorateId')) {
+                return res.status(400).json({
+                    success: false,
+                    error: `City "${city}" is not recognized by Net Global delivery zones. Please update the order city to a valid Lebanon city (e.g. Beirut, Tripoli, Saida, Jounieh).`
+                });
+            }
             return res.status(502).json({
                 success: false,
                 error: `Carrier returned non-JSON response: ${textResponse}`
