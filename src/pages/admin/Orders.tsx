@@ -11,9 +11,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, MessageCircle, Download, Trash2 } from "lucide-react";
+import { Loader2, Search, MessageCircle, Download, Trash2, Truck, Printer } from "lucide-react";
 import { toast } from "sonner";
-import { getOrders, updateOrderStatus, deleteOrder } from "@/api";
+import { getOrders, updateOrderStatus, deleteOrder, updateOrderShipment } from "@/api";
+import { createNetShipment } from "@/lib/netDelivery";
 import { generateInvoice } from "@/utils/invoiceGenerator";
 import {
     Select,
@@ -29,6 +30,50 @@ import { format } from "date-fns";
 export default function AdminOrders() {
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState("");
+    const [shippingOrderId, setShippingOrderId] = useState<string | null>(null);
+
+    const handleSendToDelivery = async (order: any) => {
+        try {
+            setShippingOrderId(order.id);
+            toast.info("Creating shipment with Net Global for Order #" + order.id.slice(0, 8) + "...");
+
+            const customerName = (order.firstName || '') + " " + (order.lastName || '');
+            const firstItem = order.items && order.items[0];
+            const itemDesc = order.items && order.items.length > 1
+                ? order.items.length + " items (Sharqiyah Modest Fashion)"
+                : (firstItem ? firstItem.productName : "Sharqiyah Abaya / Dress");
+
+            const res = await createNetShipment({
+                orderId: order.id,
+                customerName: customerName.trim() || "Customer",
+                customerPhone: order.phone,
+                customerEmail: order.email,
+                city: order.city || "Beirut",
+                address: order.address || "Lebanon",
+                amount: order.total,
+                currency: "USD",
+                itemDescription: itemDesc,
+                quantity: order.items ? order.items.reduce((sum, it) => sum + (it.quantity || 1), 0) : 1
+            });
+
+            if (res.success && res.label) {
+                await updateOrderShipment(order.id, {
+                    trackingNumber: res.label,
+                    labelUrl: res.urlLabel || '',
+                    shipmentStatus: 'Order Created'
+                });
+                queryClient.invalidateQueries({ queryKey: ["orders"] });
+                toast.success("Shipment created successfully! AWB: " + res.label);
+            } else {
+                toast.error(res.error || 'Failed to create shipment with carrier');
+            }
+        } catch (err: any) {
+            console.error('Shipment error:', err);
+            toast.error(err.message || 'Error communicating with Net Global API');
+        } finally {
+            setShippingOrderId(null);
+        }
+    };
 
     const { data: orders, isLoading } = useQuery({
         queryKey: ["orders"],
@@ -135,6 +180,7 @@ Thank you for shopping with Sharqiyah!`;
                             <TableHead>Date</TableHead>
                             <TableHead>Total</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead>Delivery / AWB</TableHead>
                             <TableHead>Items</TableHead>
                             <TableHead>Actions</TableHead>
                         </TableRow>
@@ -150,13 +196,54 @@ Thank you for shopping with Sharqiyah!`;
                                 </TableCell>
                                 <TableCell>{format(new Date(order.createdAt), "dd/MM/yyyy HH:mm")}</TableCell>
                                 <TableCell className="font-bold">${order.total?.toFixed(2)}</TableCell>
-                                <TableCell>
+                                                                <TableCell>
                                     <Badge variant={
                                         order.status === 'Completed' ? 'default' :
                                             order.status === 'Cancelled' ? 'destructive' : 'secondary'
                                     }>
                                         {order.status}
                                     </Badge>
+                                </TableCell>
+                                <TableCell>
+                                    {order.trackingNumber ? (
+                                        <div className="flex flex-col gap-1 text-xs">
+                                            <div className="font-mono font-medium flex items-center gap-1 text-primary">
+                                                <Truck className="h-3 w-3" />
+                                                {order.trackingNumber}
+                                            </div>
+                                            {order.shipmentStatus && (
+                                                <span className="text-[11px] text-muted-foreground">
+                                                    {order.shipmentStatus}
+                                                </span>
+                                            )}
+                                            {order.labelUrl && (
+                                                <a
+                                                    href={order.labelUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1 text-primary hover:underline font-semibold mt-0.5"
+                                                >
+                                                    <Printer className="h-3 w-3" />
+                                                    Print AWB
+                                                </a>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-7 text-xs flex items-center gap-1.5 border-primary/30 hover:bg-primary/5 text-primary"
+                                            disabled={shippingOrderId === order.id}
+                                            onClick={() => handleSendToDelivery(order)}
+                                        >
+                                            {shippingOrderId === order.id ? (
+                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                            ) : (
+                                                <Truck className="h-3 w-3" />
+                                            )}
+                                            Send to Net Global
+                                        </Button>
+                                    )}
                                 </TableCell>
                                 <TableCell>
                                     <div className="max-w-[200px] text-xs">
@@ -200,7 +287,7 @@ Thank you for shopping with Sharqiyah!`;
                         ))}
                         {filteredOrders?.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                                     No orders found.
                                 </TableCell>
                             </TableRow>

@@ -250,8 +250,21 @@ export const getOrders = async () => {
         total: o.total,
         items: o.items,
         status: o.status,
+        trackingNumber: o.tracking_number,
+        labelUrl: o.label_url,
+        shipmentStatus: o.shipment_status,
         createdAt: o.created_at
     }));
+};
+
+export const updateOrderShipment = async (id: string, shipmentData: { trackingNumber: string; labelUrl: string; shipmentStatus?: string }) => {
+    const { data, error } = await supabase.from('orders').update({
+        tracking_number: shipmentData.trackingNumber,
+        label_url: shipmentData.labelUrl,
+        shipment_status: shipmentData.shipmentStatus || 'Order Created'
+    }).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
 };
 
 export const updateOrderStatus = async (id: string, status: string) => {
