@@ -208,6 +208,14 @@ export default async function handler(req: any, res: any) {
         let resultData: any;
         try {
             resultData = JSON.parse(textResponse);
+            // ASP.NET Web API sometimes returns double-encoded JSON string: "\"{\\\"Label\\\": ...}\""
+            if (typeof resultData === 'string') {
+                try {
+                    resultData = JSON.parse(resultData);
+                } catch {
+                    // keep as is
+                }
+            }
         } catch (e) {
             return res.status(502).json({
                 success: false,
@@ -215,13 +223,17 @@ export default async function handler(req: any, res: any) {
             });
         }
 
-        // If Label exists (even on duplicate order), it's a success
-        if (resultData && (resultData.Label || resultData.URLLabel || resultData.label)) {
+        const label = resultData?.Label || resultData?.label || resultData?.Children?.[0]?.Label;
+        const urlLabel = resultData?.URLLabel || resultData?.urlLabel || (label ? `https://mypro-app.com/GenerateLabel?labels=${resultData?.OrderID || label.split('-').pop()}&pageSize=A4&orientation=Portrait` : null);
+        const orderId = resultData?.OrderID || resultData?.orderId || params.orderId;
+
+        // If Label exists (even on duplicate order), it's a success!
+        if (label) {
             return res.status(200).json({
                 success: true,
-                orderId: resultData.OrderID || resultData.orderId,
-                label: resultData.Label || resultData.label,
-                urlLabel: resultData.URLLabel || resultData.urlLabel
+                orderId: orderId,
+                label: label,
+                urlLabel: urlLabel
             });
         } else {
             return res.status(400).json({
