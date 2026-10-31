@@ -57,7 +57,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             hour12: true
         }).format(new Date());
 
-        // Validate and clean city. Must be a recognized city in Lebanon. Fallback to Beirut if unknown.
         let city = (params.city || '').trim();
         if (!city || city.length < 2) {
             city = 'Beirut';
@@ -151,24 +150,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
 
         const textResponse = await response.text();
+        console.log('[Net API Raw Response]:', textResponse);
+
         let resultData: any;
         try {
             resultData = JSON.parse(textResponse);
         } catch (e) {
-            // Check if server error contains governorateId
             if (textResponse.includes('governorateId')) {
                 return res.status(400).json({
                     success: false,
-                    error: `City "${city}" is not recognized by Net Global delivery zones. Please update the order city to a valid Lebanon city (e.g. Beirut, Tripoli, Saida, Jounieh).`
+                    error: `City "${city}" is not recognized by Net Global. Please choose a valid Lebanon city.`
                 });
             }
             return res.status(502).json({
                 success: false,
-                error: `Carrier returned non-JSON response: ${textResponse}`
+                error: `Carrier error: ${textResponse}`
             });
         }
 
-        if (resultData.Result === 1 || resultData.Label) {
+        // If Label exists (even if error says 'Order already exists!'), it's a success
+        if (resultData.Label) {
             return res.status(200).json({
                 success: true,
                 orderId: resultData.OrderID,
