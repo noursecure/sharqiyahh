@@ -216,17 +216,17 @@ export default async function handler(req: any, res: any) {
         }
 
         // If Label exists (even on duplicate order), it's a success
-        if (resultData.Label) {
+        if (resultData && (resultData.Label || resultData.URLLabel || resultData.label)) {
             return res.status(200).json({
                 success: true,
-                orderId: resultData.OrderID,
-                label: resultData.Label,
-                urlLabel: resultData.URLLabel
+                orderId: resultData.OrderID || resultData.orderId,
+                label: resultData.Label || resultData.label,
+                urlLabel: resultData.URLLabel || resultData.urlLabel
             });
         } else {
             return res.status(400).json({
                 success: false,
-                error: resultData.error || resultData.message || 'Carrier failed to generate shipment'
+                error: resultData?.error || resultData?.message || `Carrier returned: ${JSON.stringify(resultData)}`
             });
         }
     } catch (err: any) {
