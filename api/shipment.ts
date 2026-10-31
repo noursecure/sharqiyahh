@@ -1,5 +1,15 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import lebanonCities from '../src/data/lebanonCities.json';
+// Standalone Serverless Request & Response Interfaces
+interface ApiRequest {
+    method?: string;
+    body: any;
+    query?: Record<string, string>;
+    headers?: Record<string, string>;
+}
+
+interface ApiResponse {
+    status(code: number): ApiResponse;
+    json(body: any): void;
+}
 
 const NET_API_BASE_URL = 'https://netapi.mypro-app.com/api';
 
@@ -15,47 +25,41 @@ const DEFAULT_CONFIG = {
     contactId: 169299,
 };
 
-// Build a fast lookup map for Lebanon cities (case-insensitive)
-const CITIES_MAP = new Map<string, string>();
-for (const c of (lebanonCities as string[])) {
-    CITIES_MAP.set(c.toLowerCase().trim(), c);
-}
-
-// Common aliases/synonyms
-CITIES_MAP.set('beirut', 'Beirut');
-CITIES_MAP.set('بيروت', 'Beirut');
-CITIES_MAP.set('tripoli', 'Tripoli');
-CITIES_MAP.set('طرابلس', 'Tripoli');
-CITIES_MAP.set('sidon', 'Saida');
-CITIES_MAP.set('saida', 'Saida');
-CITIES_MAP.set('صيدا', 'Saida');
-CITIES_MAP.set('jounieh', 'Jounieh');
-CITIES_MAP.set('جونيه', 'Jounieh');
-CITIES_MAP.set('جونية', 'Jounieh');
-CITIES_MAP.set('jbeil', 'Jbeil');
-CITIES_MAP.set('byblos', 'Jbeil');
-CITIES_MAP.set('جبيل', 'Jbeil');
-CITIES_MAP.set('tyre', 'Tyre');
-CITIES_MAP.set('sour', 'Tyre');
-CITIES_MAP.set('صور', 'Tyre');
-CITIES_MAP.set('zahle', 'Zahle');
-CITIES_MAP.set('زحلة', 'Zahle');
-CITIES_MAP.set('nabatieh', 'Nabatieh');
-CITIES_MAP.set('النبطية', 'Nabatieh');
+// Known common Lebanese cities
+const LEBANON_CITIES = [
+    "Beirut", "Tripoli", "Sidon", "Saida", "Jounieh", "Jbeil", "Byblos", "Zahle", "Nabatieh", "Tyre", "Sour",
+    "Aley", "Baabda", "Hazmieh", "Hamra", "Achrafieh", "Sin El Fil", "Dekwaneh", "Batroun", "Broummana",
+    "Bikfaya", "Beit Mery", "Bhamdoun", "Choueifat", "Damour", "Zouk Mikael", "Zouk Mosbeh", "Antelias",
+    "Jal El Dib", "Dbaye", "Mansourieh", "Fanar", "Hadath", "Chiyah", "Ghobeiry", "Haret Hreik"
+];
 
 function resolveLebanonCity(inputCity?: string): string {
     if (!inputCity) return 'Beirut';
     const clean = inputCity.toLowerCase().trim();
-    if (CITIES_MAP.has(clean)) {
-        return CITIES_MAP.get(clean)!;
-    }
-    // Partial search match
-    for (const [key, val] of CITIES_MAP.entries()) {
-        if (clean.includes(key) || key.includes(clean)) {
-            return val;
+    
+    for (const city of LEBANON_CITIES) {
+        if (clean === city.toLowerCase() || clean.includes(city.toLowerCase()) || city.toLowerCase().includes(clean)) {
+            return city;
         }
     }
-    // Default fallback so Net Global doesn't reject with governorateId error
+    
+    // Arabic matching
+    if (clean.includes('بيروت')) return 'Beirut';
+    if (clean.includes('طرابلس')) return 'Tripoli';
+    if (clean.includes('صيدا')) return 'Saida';
+    if (clean.includes('جونيه') || clean.includes('جونية')) return 'Jounieh';
+    if (clean.includes('جبيل')) return 'Jbeil';
+    if (clean.includes('صور')) return 'Tyre';
+    if (clean.includes('زحلة') || clean.includes('زحله')) return 'Zahle';
+    if (clean.includes('النبطية') || clean.includes('نبطية')) return 'Nabatieh';
+    if (clean.includes('عاليه')) return 'Aley';
+    if (clean.includes('بعبدا')) return 'Baabda';
+
+    // If already looks like a valid city string, capitalize first letter
+    if (clean.length > 2) {
+        return clean.charAt(0).toUpperCase() + clean.slice(1);
+    }
+
     return 'Beirut';
 }
 
