@@ -1,15 +1,5 @@
-// Standalone Serverless Request & Response Interfaces
-interface ApiRequest {
-    method?: string;
-    body: any;
-    query?: Record<string, string>;
-    headers?: Record<string, string>;
-}
-
-interface ApiResponse {
-    status(code: number): ApiResponse;
-    json(body: any): void;
-}
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import lebanonCities from '../src/data/lebanonCities.json';
 
 const NET_API_BASE_URL = 'https://netapi.mypro-app.com/api';
 
@@ -24,6 +14,50 @@ const DEFAULT_CONFIG = {
     senderAddressId: 231833,
     contactId: 169299,
 };
+
+// Build a fast lookup map for Lebanon cities (case-insensitive)
+const CITIES_MAP = new Map<string, string>();
+for (const c of (lebanonCities as string[])) {
+    CITIES_MAP.set(c.toLowerCase().trim(), c);
+}
+
+// Common aliases/synonyms
+CITIES_MAP.set('beirut', 'Beirut');
+CITIES_MAP.set('بيروت', 'Beirut');
+CITIES_MAP.set('tripoli', 'Tripoli');
+CITIES_MAP.set('طرابلس', 'Tripoli');
+CITIES_MAP.set('sidon', 'Saida');
+CITIES_MAP.set('saida', 'Saida');
+CITIES_MAP.set('صيدا', 'Saida');
+CITIES_MAP.set('jounieh', 'Jounieh');
+CITIES_MAP.set('جونيه', 'Jounieh');
+CITIES_MAP.set('جونية', 'Jounieh');
+CITIES_MAP.set('jbeil', 'Jbeil');
+CITIES_MAP.set('byblos', 'Jbeil');
+CITIES_MAP.set('جبيل', 'Jbeil');
+CITIES_MAP.set('tyre', 'Tyre');
+CITIES_MAP.set('sour', 'Tyre');
+CITIES_MAP.set('صور', 'Tyre');
+CITIES_MAP.set('zahle', 'Zahle');
+CITIES_MAP.set('زحلة', 'Zahle');
+CITIES_MAP.set('nabatieh', 'Nabatieh');
+CITIES_MAP.set('النبطية', 'Nabatieh');
+
+function resolveLebanonCity(inputCity?: string): string {
+    if (!inputCity) return 'Beirut';
+    const clean = inputCity.toLowerCase().trim();
+    if (CITIES_MAP.has(clean)) {
+        return CITIES_MAP.get(clean)!;
+    }
+    // Partial search match
+    for (const [key, val] of CITIES_MAP.entries()) {
+        if (clean.includes(key) || key.includes(clean)) {
+            return val;
+        }
+    }
+    // Default fallback so Net Global doesn't reject with governorateId error
+    return 'Beirut';
+}
 
 async function getNetAuthToken(): Promise<string> {
     const response = await fetch(`${NET_API_BASE_URL}/authentication/loginClient`, {
@@ -47,7 +81,7 @@ async function getNetAuthToken(): Promise<string> {
     return data.token;
 }
 
-export default async function handler(req: ApiRequest, res: ApiResponse) {
+export default async function handler(req: any, res: any) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
@@ -68,10 +102,14 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             hour12: true
         }).format(new Date());
 
-        let city = (params.city || '').trim();
-        if (!city || city.length < 2) {
-            city = 'Beirut';
-        }
+        // Resolve city to a guaranteed valid Lebanese city
+        const rawCity = params.city || '';
+        const validCity = resolveLebanonCity(rawCity);
+
+        // If the original input was non-Lebanese (like 'los anglos'), append it to street address for reference
+        const streetAddress = rawCity && rawCity !== validCity
+            ? `${params.address || 'Street 1'} (${rawCity})`
+            : (params.address || 'Street 1');
 
         const customerPhone = (params.customerPhone || '70112112').replace(/[^\d+]/g, '');
 
@@ -94,8 +132,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
                 Email: params.customerEmail || "customer@sharqiyahh.com",
                 Address: {
                     Country: "Lebanon",
-                    City: city,
-                    Street: params.address || "Street 1",
+                    City: validCity,
+                    Street: streetAddress,
                     Building: "Building 1",
                     Floor: "1st floor",
                     LandMark: "",
@@ -167,19 +205,13 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         try {
             resultData = JSON.parse(textResponse);
         } catch (e) {
-            if (textResponse.includes('governorateId')) {
-                return res.status(400).json({
-                    success: false,
-                    error: `City "${city}" is not recognized by Net Global. Please choose a valid Lebanon city.`
-                });
-            }
             return res.status(502).json({
                 success: false,
                 error: `Carrier error: ${textResponse}`
             });
         }
 
-        // If Label exists (even if error says 'Order already exists!'), it's a success
+        // If Label exists (even on duplicate order), it's a success
         if (resultData.Label) {
             return res.status(200).json({
                 success: true,
