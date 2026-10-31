@@ -1,7 +1,18 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+// Standalone Serverless Request & Response Interfaces
+interface ApiRequest {
+    method?: string;
+    body: any;
+    query?: Record<string, string>;
+    headers?: Record<string, string>;
+}
+
+interface ApiResponse {
+    status(code: number): ApiResponse;
+    json(body: any): void;
+}
+
 import { createClient } from '@supabase/supabase-js';
 
-// Status Event mappings from Net Status List.xlsx
 const EVENT_MAPPING: Record<number, string> = {
     2: 'Order Created',
     3: 'Pickup with driver',
@@ -14,8 +25,7 @@ const EVENT_MAPPING: Record<number, string> = {
     12: 'Checked in - Reschedule'
 };
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-    // Only accept POST requests
+export default async function handler(req: ApiRequest, res: ApiResponse) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
@@ -28,20 +38,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const label = body.Label || body.ParentLabel;
         const eventId = Number(body.EventId);
         const eventName = body.EventName || EVENT_MAPPING[eventId] || 'In Transit';
-        const receivedBy = body.ReceivedBy || null;
 
         if (!orderReference && !label) {
             return res.status(400).json({ error: 'Missing OrderReference or Label in webhook body' });
         }
 
-        // Initialize Supabase admin/server client
         const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
         const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
         if (supabaseUrl && supabaseKey) {
             const supabase = createClient(supabaseUrl, supabaseKey);
 
-            // Determine friendly order status
             let systemStatus: string | undefined;
             if (eventId === 6 || eventName.toLowerCase().includes('delivered')) {
                 systemStatus = 'Completed';
@@ -51,7 +58,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 systemStatus = 'Processing';
             }
 
-            // Update matching order by id or tracking number
             const updatePayload: any = {
                 shipment_status: eventName,
                 tracking_number: label
