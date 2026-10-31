@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, CreditCard, Truck, Shield } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { createOrder } from "@/api";
+import lebanonCities from "@/data/lebanonCities.json";
 
 interface CartItem {
   id: string;
@@ -25,6 +26,7 @@ interface CheckoutProps {
 const Checkout = ({ items, onClearCart }: CheckoutProps) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("Beirut");
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = subtotal > 200 ? 0 : 15;
@@ -44,8 +46,8 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
       email: (form.elements.namedItem("email") as HTMLInputElement).value,
       phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
       address: (form.elements.namedItem("address") as HTMLInputElement).value,
-      city: (form.elements.namedItem("city") as HTMLInputElement).value,
-      region: (form.elements.namedItem("region") as HTMLInputElement).value,
+      city: selectedCity,
+      region: (form.elements.namedItem("region") as HTMLInputElement)?.value || "",
       items: items,
       total: total
     };
@@ -142,18 +144,27 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
                     <Label htmlFor="apartment">Apartment, suite, etc. (optional)</Label>
                     <Input id="apartment" name="apartment" placeholder="Apartment, suite, etc." />
                   </div>
-                  <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="grid sm:grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input id="city" name="city" placeholder="City" required />
+                      <Label htmlFor="city">City (Lebanon)</Label>
+                      <select
+                        id="city"
+                        name="city"
+                        value={selectedCity}
+                        onChange={(e) => setSelectedCity(e.target.value)}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        required
+                      >
+                        {(lebanonCities as string[]).map((city) => (
+                          <option key={city} value={city}>
+                            {city}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="region">Region</Label>
-                      <Input id="region" name="region" placeholder="Region" required />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="postal">Postal Code</Label>
-                      <Input id="postal" name="postal" placeholder="Postal code" />
+                      <Label htmlFor="region">Area / Landmark (Optional)</Label>
+                      <Input id="region" name="region" placeholder="e.g. Near ABC Mall, Main Street" />
                     </div>
                   </div>
                 </div>
