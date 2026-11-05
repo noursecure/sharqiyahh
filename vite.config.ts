@@ -57,8 +57,14 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes('preload-helper')) {
+            return 'vite-preload';
+          }
           if (id.includes('node_modules')) {
-            if (id.includes('jspdf') || id.includes('html2canvas')) {
+            if (id.includes('react/') || id.includes('react-dom/') || id.includes('scheduler/')) {
+              return 'vendor-react';
+            }
+            if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('fflate') || id.includes('canvg') || id.includes('pako')) {
               return 'vendor-pdf';
             }
             if (id.includes('@supabase')) {
@@ -66,9 +72,6 @@ export default defineConfig(({ mode }) => ({
             }
             if (id.includes('@tanstack')) {
               return 'vendor-query';
-            }
-            if (id.includes('framer-motion')) {
-              return 'vendor-motion';
             }
           }
         }
