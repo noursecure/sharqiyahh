@@ -40,14 +40,26 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
 
+    const emailValue = (form.elements.namedItem("email") as HTMLInputElement)?.value?.trim();
+    const addressLine = (form.elements.namedItem("address") as HTMLInputElement)?.value?.trim();
+    const buildingFloor = (form.elements.namedItem("apartment") as HTMLInputElement)?.value?.trim();
+    const landmark = (form.elements.namedItem("region") as HTMLInputElement)?.value?.trim();
+    const deliveryNotes = (form.elements.namedItem("notes") as HTMLInputElement)?.value?.trim();
+
+    // Combine detailed address info for the carrier driver
+    let fullAddress = addressLine;
+    if (buildingFloor) fullAddress += `, Bldg/Floor: ${buildingFloor}`;
+    if (landmark) fullAddress += ` (Near: ${landmark})`;
+    if (deliveryNotes) fullAddress += ` [Note: ${deliveryNotes}]`;
+
     const orderData = {
-      firstName: formData.get("firstName") || "Guest", // Fallback for demo if id not matching perfectly
+      firstName: formData.get("firstName") || "Guest",
       lastName: formData.get("lastName") || "User",
-      email: (form.elements.namedItem("email") as HTMLInputElement).value,
+      email: emailValue || "customer@sharqiyahh.com",
       phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
-      address: (form.elements.namedItem("address") as HTMLInputElement).value,
+      address: fullAddress,
       city: selectedCity,
-      region: (form.elements.namedItem("region") as HTMLInputElement)?.value || "",
+      region: landmark || "",
       items: items,
       total: total
     };
@@ -110,12 +122,12 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
                 <h2 className="font-serif text-xl">Contact Information</h2>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="your@email.com" required />
+                    <Label htmlFor="phone">Phone Number (Required for Delivery)</Label>
+                    <Input id="phone" type="tel" placeholder="+961 70 123 456" required />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" type="tel" placeholder="+961 XX XXX XXX" required />
+                    <Label htmlFor="email">Email (Optional)</Label>
+                    <Input id="email" type="email" placeholder="your@email.com (optional)" />
                   </div>
                 </div>
               </div>
@@ -124,7 +136,7 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
 
               {/* Shipping Address */}
               <div className="space-y-4">
-                <h2 className="font-serif text-xl">Shipping Address</h2>
+                <h2 className="font-serif text-xl">Delivery Address (Lebanon)</h2>
                 <div className="grid gap-4">
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="grid gap-2">
@@ -136,17 +148,9 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
                       <Input id="lastName" name="lastName" placeholder="Last name" required />
                     </div>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Input id="address" name="address" placeholder="Street address" required />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="apartment">Apartment, suite, etc. (optional)</Label>
-                    <Input id="apartment" name="apartment" placeholder="Apartment, suite, etc." />
-                  </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="city">City (Lebanon)</Label>
+                      <Label htmlFor="city">City / Region (المدينة / المنطقة)</Label>
                       <select
                         id="city"
                         name="city"
@@ -163,8 +167,22 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
                       </select>
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="region">Area / Landmark (Optional)</Label>
-                      <Input id="region" name="region" placeholder="e.g. Near ABC Mall, Main Street" />
+                      <Label htmlFor="region">Landmark / Near (علامة فارقة)</Label>
+                      <Input id="region" name="region" placeholder="e.g. Near ABC Mall, Pharmacy, Mosque" />
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="address">Street Address (اسم الشارع أو المنطقة)</Label>
+                    <Input id="address" name="address" placeholder="e.g. Hamra Main Street, Ras Beirut" required />
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="apartment">Building & Floor (البناية والطابق)</Label>
+                      <Input id="apartment" name="apartment" placeholder="e.g. Al Noor Bldg, 3rd Floor" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="notes">Delivery Notes (ملاحظات للسائق - اختياري)</Label>
+                      <Input id="notes" name="notes" placeholder="e.g. Please call before arriving" />
                     </div>
                   </div>
                 </div>
