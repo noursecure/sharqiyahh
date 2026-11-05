@@ -224,7 +224,13 @@ export default async function handler(req: any, res: any) {
         }
 
         const label = resultData?.Label || resultData?.label || resultData?.Children?.[0]?.Label;
-        const urlLabel = resultData?.URLLabel || resultData?.urlLabel || (label ? `https://mypro-app.com/GenerateLabel?labels=${resultData?.OrderID || label.split('-').pop()}&pageSize=A4&orientation=Portrait` : null);
+        let urlLabel = resultData?.URLLabel || resultData?.urlLabel;
+        if (urlLabel) {
+            // Fix carrier domain: replace mypro-app.com with net.mypro-app.com
+            urlLabel = urlLabel.replace('://mypro-app.com/', '://net.mypro-app.com/');
+        } else if (label) {
+            urlLabel = `https://net.mypro-app.com/GenerateLabel?labels=${resultData?.OrderID || label.split('-').pop()}&pageSize=A4&orientation=Portrait`;
+        }
         const orderId = resultData?.OrderID || resultData?.orderId || params.orderId;
 
         // If Label exists (even on duplicate order), it's a success!

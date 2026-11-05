@@ -218,7 +218,7 @@ Thank you for shopping with Sharqiyah!`;
                                             )}
                                             {order.labelUrl && (
                                                 <a
-                                                    href={order.labelUrl}
+                                                    href={order.labelUrl.replace('://mypro-app.com/', '://net.mypro-app.com/')}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="inline-flex items-center gap-1 text-primary hover:underline font-semibold mt-0.5"
