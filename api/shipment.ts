@@ -11,18 +11,18 @@ interface ApiResponse {
     json(body: any): void;
 }
 
-const NET_API_BASE_URL = 'https://netapi.mypro-app.com/api';
+const NET_API_BASE_URL = process.env.NET_API_BASE_URL || 'https://api.mynetglobal.group/api';
 
 const DEFAULT_CONFIG = {
-    username: process.env.NET_API_USERNAME || 'TestLM@Warehousing.com',
-    password: process.env.NET_API_PASSWORD || 'L@stMile2025',
+    username: process.env.NET_API_USERNAME || 'Hallab123@outlook.com',
+    password: process.env.NET_API_PASSWORD || 'H@llab#92Xq!7mK',
     companyId: 1,
     serviceId: 8,
     serviceTypeId: 64,
     shipmentTypeId: 42,
-    senderId: 135820,
-    senderAddressId: 231833,
-    contactId: 169299,
+    senderId: 607788,
+    senderAddressId: 794304,
+    contactId: 733175,
 };
 
 // Known common Lebanese cities
