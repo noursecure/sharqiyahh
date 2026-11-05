@@ -37,6 +37,10 @@ export const ProductCard = ({
           <img
             src={image}
             alt={name}
+            loading="lazy"
+            decoding="async"
+            width="350"
+            height="350"
             className="w-full h-full object-cover transition-elegant group-hover:scale-105"
           />
         </div>

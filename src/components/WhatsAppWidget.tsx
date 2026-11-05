@@ -28,7 +28,7 @@ export const WhatsAppWidget = () => {
                         <div className="flex gap-3">
                             <div className="relative">
                                 <div className="w-12 h-12 rounded-full border-2 border-white/50 bg-white flex items-center justify-center overflow-hidden">
-                                    <img src={whatsappIcon} alt="Support" className="w-full h-full object-cover" />
+                                    <img src={whatsappIcon} alt="Support" width="48" height="48" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                 </div>
                                 <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-[#00a884] rounded-full"></span>
                             </div>

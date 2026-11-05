@@ -55,6 +55,10 @@ export default function Home({ onAddToCart, wishlistIds, onToggleWishlist }: Hom
                   <img
                     src={category.image}
                     alt={category.name}
+                    loading="lazy"
+                    decoding="async"
+                    width="400"
+                    height="533"
                     className="w-full h-full object-cover transition-elegant group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent flex items-end p-6">
