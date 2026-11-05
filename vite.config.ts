@@ -31,7 +31,17 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     viteCompression({ algorithm: 'gzip', ext: '.gz' }),
-    viteCompression({ algorithm: 'brotliCompress', ext: '.br' })
+    viteCompression({ algorithm: 'brotliCompress', ext: '.br' }),
+    {
+      name: 'non-render-blocking-css',
+      transformIndexHtml(html) {
+        // Transform render-blocking CSS links to preload + asynchronous onload with fallback
+        return html.replace(
+          /<link rel="stylesheet" crossorigin href="([^"]+\.css)">/g,
+          '<link rel="preload" as="style" href="$1" crossorigin><link rel="stylesheet" href="$1" crossorigin media="print" onload="this.media=\'all\'"><noscript><link rel="stylesheet" href="$1"></noscript>'
+        );
+      }
+    }
   ].filter(Boolean),
   resolve: {
     alias: {
