@@ -1,0 +1,17 @@
+{
+  "@context": "https://agenticresourcediscovery.org/context/v1",
+  "entries": [
+    {
+      "identifier": "urn:air:sharqiyahh.com:storefront",
+      "displayName": "Sharqiyah Modest Fashion Storefront",
+      "type": "text/html",
+      "url": "https://www.sharqiyahh.com/"
+    },
+    {
+      "identifier": "urn:air:sharqiyahh.com:llms",
+      "displayName": "Sharqiyah LLM Documentation",
+      "type": "text/markdown",
+      "url": "https://www.sharqiyahh.com/llms.txt"
+    }
+  ]
+}
