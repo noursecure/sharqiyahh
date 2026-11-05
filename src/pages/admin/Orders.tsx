@@ -15,7 +15,7 @@ import { Loader2, Search, MessageCircle, Download, Trash2, Truck, Printer } from
 import { toast } from "sonner";
 import { getOrders, updateOrderStatus, deleteOrder, updateOrderShipment } from "@/api";
 import { createNetShipment } from "@/lib/netDelivery";
-import { generateInvoice } from "@/utils/invoiceGenerator";
+// invoice generator lazy loaded on demand
 import {
     Select,
     SelectContent,
@@ -256,7 +256,7 @@ Thank you for shopping with Sharqiyah!`;
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex gap-2">
-                                        <Button size="sm" variant="outline" onClick={() => generateInvoice(order)} title="Download Invoice">
+                                        <Button size="sm" variant="outline" onClick={async () => { const { generateInvoice } = await import("@/utils/invoiceGenerator"); generateInvoice(order); }} title="Download Invoice">
                                             <Download className="h-4 w-4" />
                                         </Button>
                                         <Button size="sm" variant="outline" onClick={() => handleWhatsAppShare(order)} title="Share on WhatsApp" className="text-green-600 border-green-200 hover:bg-green-50">
