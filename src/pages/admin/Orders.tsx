@@ -171,7 +171,142 @@ Thank you for shopping with Sharqiyah!`;
                 </div>
             </div>
 
-            <div className="bg-card rounded-lg border shadow-sm overflow-x-auto">
+            {/* Mobile Orders View (Cards for mobile screens) */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {filteredOrders?.map((order: any) => (
+                    <div key={order.id} className="bg-card rounded-lg border shadow-sm p-4 space-y-3">
+                        <div className="flex items-center justify-between border-b pb-2">
+                            <div>
+                                <span className="font-mono text-xs font-bold text-muted-foreground">ID: </span>
+                                <span className="font-mono text-xs font-semibold">{order.id.slice(0, 8)}</span>
+                            </div>
+                            <Badge variant={
+                                order.status === 'Completed' ? 'default' :
+                                    order.status === 'Cancelled' ? 'destructive' : 'secondary'
+                            }>
+                                {order.status}
+                            </Badge>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                                <div className="text-xs text-muted-foreground">Customer</div>
+                                <div className="font-semibold text-foreground">{order.firstName} {order.lastName}</div>
+                                {order.phone && (
+                                    <a href={`tel:${order.phone}`} className="text-xs text-primary underline block mt-0.5">
+                                        {order.phone}
+                                    </a>
+                                )}
+                                {order.email && (
+                                    <div className="text-xs text-muted-foreground truncate max-w-[150px]">{order.email}</div>
+                                )}
+                            </div>
+                            <div className="text-right">
+                                <div className="text-xs text-muted-foreground">Total & Date</div>
+                                <div className="text-lg font-bold text-primary">${order.total?.toFixed(2)}</div>
+                                <div className="text-[11px] text-muted-foreground">
+                                    {format(new Date(order.createdAt), "dd/MM/yyyy HH:mm")}
+                                </div>
+                            </div>
+                        </div>
+
+                        {order.address && (
+                            <div className="text-xs bg-muted/40 p-2 rounded text-muted-foreground">
+                                <span className="font-medium text-foreground">Address: </span>
+                                {order.city && `${order.city}, `}{order.address}
+                            </div>
+                        )}
+
+                        <div className="border-t pt-2">
+                            <div className="text-xs font-semibold text-muted-foreground mb-1">Items ({order.items?.length || 0}):</div>
+                            <div className="space-y-1 bg-muted/20 p-2 rounded text-xs">
+                                {order.items?.map((item: any) => (
+                                    <div key={item.id} className="flex justify-between">
+                                        <span className="font-medium">{item.quantity}x {item.productName}</span>
+                                        {item.size && <span className="text-muted-foreground">Size: {item.size}</span>}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Delivery Section */}
+                        <div className="border-t pt-2 flex items-center justify-between flex-wrap gap-2">
+                            {order.trackingNumber ? (
+                                <div className="flex flex-col gap-0.5 text-xs">
+                                    <div className="font-mono font-medium flex items-center gap-1 text-primary">
+                                        <Truck className="h-3 w-3" />
+                                        {order.trackingNumber}
+                                    </div>
+                                    {order.labelUrl && (
+                                        <a
+                                            href={order.labelUrl.replace('://mypro-app.com/', '://net.mypro-app.com/')}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-primary hover:underline font-semibold text-xs"
+                                        >
+                                            <Printer className="h-3 w-3" />
+                                            Print AWB
+                                        </a>
+                                    )}
+                                </div>
+                            ) : (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 text-xs flex items-center gap-1.5 border-primary/30 hover:bg-primary/5 text-primary w-full sm:w-auto"
+                                    disabled={shippingOrderId === order.id}
+                                    onClick={() => handleSendToDelivery(order)}
+                                >
+                                    {shippingOrderId === order.id ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                        <Truck className="h-3 w-3" />
+                                    )}
+                                    Send to Net Global
+                                </Button>
+                            )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="border-t pt-2 flex items-center justify-between gap-2">
+                            <div className="flex-1">
+                                <Select
+                                    defaultValue={order.status}
+                                    onValueChange={(value) => handleStatusChange(order.id, value)}
+                                >
+                                    <SelectTrigger className="h-8 text-xs">
+                                        <SelectValue placeholder="Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Pending">Pending</SelectItem>
+                                        <SelectItem value="Processing">Processing</SelectItem>
+                                        <SelectItem value="Completed">Completed</SelectItem>
+                                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <Button size="sm" variant="outline" onClick={async () => { const { generateInvoice } = await import("@/utils/invoiceGenerator"); generateInvoice(order); }} title="Download Invoice" className="h-8 w-8 p-0">
+                                <Download className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => handleWhatsAppShare(order)} title="Share on WhatsApp" className="h-8 w-8 p-0 text-green-600 border-green-200 hover:bg-green-50">
+                                <MessageCircle className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(order.id)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                ))}
+
+                {filteredOrders?.length === 0 && (
+                    <div className="text-center py-12 text-muted-foreground bg-card rounded-lg border p-6">
+                        No orders found.
+                    </div>
+                )}
+            </div>
+
+            {/* Desktop Orders View (Table with horizontal scroll) */}
+            <div className="hidden md:block bg-card rounded-lg border shadow-sm overflow-x-auto">
                 <Table className="min-w-[800px]">
                     <TableHeader>
                         <TableRow>
