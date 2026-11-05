@@ -51,18 +51,28 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: 'esnext',
     minify: 'esbuild',
-    modulePreload: {
-      polyfill: false,
-    },
+    modulePreload: false,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('preload-helper')) {
             return 'vite-preload';
           }
+          if (id.includes('src/api')) {
+            return 'api';
+          }
           if (id.includes('node_modules')) {
             if (id.includes('react/') || id.includes('react-dom/') || id.includes('scheduler/')) {
               return 'vendor-react';
+            }
+            if (id.includes('react-router') || id.includes('@remix-run')) {
+              return 'vendor-router';
+            }
+            if (id.includes('tslib')) {
+              return 'vendor-tslib';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'vendor-radix';
             }
             if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('fflate') || id.includes('canvg') || id.includes('pako')) {
               return 'vendor-pdf';

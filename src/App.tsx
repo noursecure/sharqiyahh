@@ -1,14 +1,17 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { lazy, Suspense, useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useState, lazy, Suspense } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { CartSlideout } from "@/components/CartSlideout";
+const CartSlideout = lazy(() => import("@/components/CartSlideout").then(m => ({ default: m.CartSlideout })));
 import { WhatsAppWidget } from "@/components/WhatsAppWidget";
+import { toast } from "@/hooks/use-toast";
+
+const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
+const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
+const TooltipProvider = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+
 const Home = lazy(() => import("./pages/Home"));
 const Shop = lazy(() => import("./pages/Shop"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
@@ -22,8 +25,6 @@ const AdminLayout = lazy(() => import("@/components/admin/AdminLayout"));
 const Categories = lazy(() => import("./pages/admin/Categories"));
 const AdminOrders = lazy(() => import("./pages/admin/Orders"));
 const Subscribers = lazy(() => import("./pages/admin/Subscribers"));
-
-import { toast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient();
 
@@ -184,8 +185,10 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
+        <Suspense fallback={null}>
+          <Toaster />
+          <Sonner />
+        </Suspense>
         <BrowserRouter>
           <AppContent />
         </BrowserRouter>
