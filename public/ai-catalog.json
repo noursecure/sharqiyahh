@@ -1,12 +1,8 @@
 {
-  "version": "1.0",
-  "name": "Sharqiyah",
-  "description": "Elegant Modest Fashion",
-  "resources": [
-    {
-      "type": "website",
-      "url": "https://sharqiyahh.vercel.app/",
-      "description": "Sharqiyah Storefront"
-    }
-  ]
+  "name": "Sharqiyah Modest Fashion",
+  "description": "Premium abayas, modest dresses, sets, and prayer clothes handcrafted and delivered across Lebanon.",
+  "url": "https://www.sharqiyahh.com",
+  "currency": "USD",
+  "categories": ["Abayas", "Dresses", "Sets", "Prayer Clothes", "Hijabs"],
+  "delivery": "All Lebanon within 2-4 business days"
 }

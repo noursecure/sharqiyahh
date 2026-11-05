@@ -2,16 +2,25 @@
   "@context": "https://agenticresourcediscovery.org/context/v1",
   "entries": [
     {
-      "identifier": "urn:air:sharqiyahh.com:storefront",
-      "displayName": "Sharqiyah Modest Fashion Storefront",
-      "type": "text/html",
-      "url": "https://www.sharqiyahh.com/"
+      "identifier": "urn:air:sharqiyahh.com:catalog",
+      "displayName": "Sharqiyah Modest Fashion Catalog",
+      "type": "application/ai-catalog+json",
+      "url": "https://www.sharqiyahh.com/ai-catalog.json",
+      "representativeQueries": [
+        "Sharqiyah modest fashion collection",
+        "abayas and dresses in Lebanon",
+        "buy modest clothes Lebanon"
+      ]
     },
     {
       "identifier": "urn:air:sharqiyahh.com:llms",
       "displayName": "Sharqiyah LLM Documentation",
-      "type": "text/markdown",
-      "url": "https://www.sharqiyahh.com/llms.txt"
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+      "url": "https://www.sharqiyahh.com/llms.txt",
+      "representativeQueries": [
+        "Sharqiyah website information",
+        "Sharqiyah store policies and delivery"
+      ]
     }
   ]
 }
