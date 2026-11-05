@@ -206,7 +206,8 @@ export default function AdminDashboard() {
     };
 
     const removeAdditionalImage = (urlToRemove: string) => {
-        const currentImages = formData.images.split(',').filter(Boolean);
+        const rawImages = typeof formData.images === "string" ? formData.images : Array.isArray(formData.images) ? (formData.images as string[]).join(',') : "";
+        const currentImages = rawImages.split(',').filter(Boolean);
         const newImages = currentImages.filter(url => url !== urlToRemove).join(',');
         setFormData({ ...formData, images: newImages });
     };
@@ -231,18 +232,22 @@ export default function AdminDashboard() {
 
     const handleEdit = (product: APIProduct) => {
         setEditingProduct(product);
+        const imagesStr = Array.isArray(product.images)
+            ? product.images.join(',')
+            : (typeof product.images === 'string' ? product.images : '');
+
         setFormData({
-            name: product.name,
-            nameAr: product.nameAr,
-            price: String(product.price),
+            name: product.name || "",
+            nameAr: product.nameAr || "",
+            price: String(product.price ?? ""),
             originalPrice: product.originalPrice ? String(product.originalPrice) : "",
-            category: product.category,
-            image: product.image,
+            category: product.category || "",
+            image: product.image || "",
             description: product.description || "",
             descriptionAr: product.descriptionAr || "",
-            stock: String(product.stock || 0),
+            stock: String(product.stock ?? 0),
             colors: product.colors || "",
-            images: product.images || "",
+            images: imagesStr,
         });
         setIsDialogOpen(true);
     };
@@ -532,7 +537,7 @@ export default function AdminDashboard() {
                                                 />
                                             </div>
                                             <div className="grid grid-cols-4 gap-2">
-                                                {formData.images.split(',').filter(Boolean).map((img, idx) => (
+                                                {(typeof formData.images === "string" ? formData.images : Array.isArray(formData.images) ? (formData.images as string[]).join(',') : "").split(',').filter(Boolean).map((img, idx) => (
                                                     <div key={idx} className="relative aspect-square border rounded group">
                                                         <img src={img} className="w-full h-full object-cover rounded" />
                                                         <button
