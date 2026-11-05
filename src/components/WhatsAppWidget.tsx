@@ -72,7 +72,7 @@ export const WhatsAppWidget = () => {
                     className="bg-black hover:bg-gray-900 text-white rounded-full shadow-lg transition-all hover:scale-110 flex items-center justify-center w-14 h-14"
                     aria-label="Chat on WhatsApp"
                 >
-                    <img src={whatsappIcon} className="w-8 h-8 object-contain brightness-0 invert" alt="WhatsApp" />
+                    <img src="/whatsapp-optimized.webp" width="32" height="32" className="w-8 h-8 object-contain brightness-0 invert" alt="WhatsApp" />
                 </button>
 
                 <div className="bg-white px-4 py-2 rounded-lg shadow-md text-sm font-medium text-gray-800 transition-opacity opacity-100 hidden md:block">

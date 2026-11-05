@@ -206,7 +206,7 @@ export const getSettings = async (): Promise<Record<string, string>> => {
     if (data) {
         data.forEach((setting: any) => {
             if (setting.key === 'heroBanner' && setting.value) {
-                const optimizedBanners = setting.value.split(',').map((url: string) => optimizeImage(url.trim(), 1100, 70)).join(',');
+                const optimizedBanners = setting.value.split(',').map((url: string) => optimizeImage(url.trim(), 900, 60)).join(',');
                 settings[setting.key] = optimizedBanners;
             } else {
                 settings[setting.key] = setting.value;

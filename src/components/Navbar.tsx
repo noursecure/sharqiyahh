@@ -36,7 +36,7 @@ export const Navbar = ({ cartCount, wishlistCount, onCartOpen }: NavbarProps) =>
     queryFn: getCategories
   });
 
-  const logo = settings?.siteLogo || logoDefault;
+  const logo = settings?.siteLogo || "/logo-optimized.webp";
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
