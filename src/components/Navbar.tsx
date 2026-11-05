@@ -6,6 +6,13 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSettings, getCategories } from "@/api";
 import logoDefault from "@/assets/logo.png";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface NavbarProps {
   cartCount: number;
@@ -45,54 +52,46 @@ export const Navbar = ({ cartCount, wishlistCount, onCartOpen }: NavbarProps) =>
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            {/* Mobile Menu */}
             <div className="md:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
-
-              {mobileMenuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 top-[88px] bg-background/80 backdrop-blur-sm z-40"
-                    onClick={() => setMobileMenuOpen(false)}
-                  />
-                  <div className="fixed top-[88px] left-0 bottom-0 w-3/4 max-w-xs bg-background border-r border-border p-6 shadow-xl z-50 overflow-y-auto">
-                    <div className="flex flex-col gap-4">
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label="Open menu">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left">
+                  <SheetHeader className="mb-6 text-left">
+                    <SheetTitle>Menu</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-4">
+                    <Link
+                      to="/"
+                      className="text-lg font-medium hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Home
+                    </Link>
+                    <Link
+                      to="/shop"
+                      className="text-lg font-medium hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Shop
+                    </Link>
+                    <div className="h-px bg-border my-2" />
+                    {categories.map((cat) => (
                       <Link
-                        to="/"
-                        className="text-lg font-medium hover:text-primary transition-colors"
+                        key={cat.id}
+                        to={`/shop?category=${cat.id}`}
+                        className="text-lg hover:text-primary transition-colors"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        Home
+                        {cat.name}
                       </Link>
-                      <Link
-                        to="/shop"
-                        className="text-lg font-medium hover:text-primary transition-colors"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Shop
-                      </Link>
-                      <div className="h-px bg-border my-2" />
-                      {categories.map((cat) => (
-                        <Link
-                          key={cat.id}
-                          to={`/shop?category=${cat.id}`}
-                          className="text-lg hover:text-primary transition-colors"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          {cat.name}
-                        </Link>
-                      ))}
-                    </div>
+                    ))}
                   </div>
-                </>
-              )}
+                </SheetContent>
+              </Sheet>
             </div>
 
             {/* Logo */}
