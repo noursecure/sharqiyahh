@@ -48,6 +48,8 @@ export const ProductCard = ({
         size="icon"
         className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm"
         onClick={onToggleWishlist}
+        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
       >
         <Heart className={`h-5 w-5 ${isWishlisted ? "fill-current text-destructive" : ""}`} />
       </Button>

@@ -77,6 +77,8 @@ export default function Wishlist({ items, onRemove, onAddToCart }: WishlistProps
                   size="icon"
                   className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm hover:bg-destructive hover:text-destructive-foreground"
                   onClick={() => onRemove(item.id)}
+                  aria-label="Remove from wishlist"
+                  title="Remove from wishlist"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

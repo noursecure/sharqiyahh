@@ -55,7 +55,7 @@ export const CartSlideout = ({
               <h2 className="text-lg font-serif font-semibold">Shopping Cart</h2>
               <span className="text-sm text-muted-foreground">({items.length})</span>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose}>
+            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close cart">
               <X className="h-5 w-5" />
             </Button>
           </div>
@@ -87,6 +87,7 @@ export const CartSlideout = ({
                           size="icon"
                           className="h-7 w-7"
                           onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                          aria-label="Decrease quantity"
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
@@ -96,6 +97,7 @@ export const CartSlideout = ({
                           size="icon"
                           className="h-7 w-7"
                           onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                          aria-label="Increase quantity"
                         >
                           <Plus className="h-3 w-3" />
                         </Button>
