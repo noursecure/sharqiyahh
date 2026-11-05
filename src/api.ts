@@ -3,7 +3,11 @@ import type { Product, Category, APIProduct } from './types';
 
 // Helper to transform Supabase public URL into an optimized render URL
 export const optimizeImage = (url: string | null, width: number = 800): string => {
-    return url || '';
+    if (!url) return '';
+    if (url.includes('supabase.co/storage/v1/object/public/')) {
+        return "https://wsrv.nl/?url=" + encodeURIComponent(url) + "&w=" + width + "&output=webp&q=80";
+    }
+    return url;
 };
 
 // Helper to map DB Product to APIProduct
