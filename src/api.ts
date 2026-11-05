@@ -2,10 +2,10 @@ import { supabase } from './lib/supabase';
 import type { Product, Category, APIProduct } from './types';
 
 // Helper to transform Supabase public URL into an optimized render URL
-export const optimizeImage = (url: string | null, width: number = 800): string => {
+export const optimizeImage = (url: string | null, width: number = 700, quality: number = 72): string => {
     if (!url) return '';
     if (url.includes('supabase.co/storage/v1/object/public/')) {
-        return "https://wsrv.nl/?url=" + encodeURIComponent(url) + "&w=" + width + "&output=webp&q=80";
+        return "https://wsrv.nl/?url=" + encodeURIComponent(url) + "&w=" + width + "&output=webp&q=" + quality;
     }
     return url;
 };
@@ -206,7 +206,7 @@ export const getSettings = async (): Promise<Record<string, string>> => {
     if (data) {
         data.forEach((setting: any) => {
             if (setting.key === 'heroBanner' && setting.value) {
-                const optimizedBanners = setting.value.split(',').map((url: string) => optimizeImage(url.trim(), 1920)).join(',');
+                const optimizedBanners = setting.value.split(',').map((url: string) => optimizeImage(url.trim(), 1100, 70)).join(',');
                 settings[setting.key] = optimizedBanners;
             } else {
                 settings[setting.key] = setting.value;
