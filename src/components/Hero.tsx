@@ -28,21 +28,26 @@ export const Hero = () => {
 
   return (
     <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
-      {bannerImages.map((image: string, index: number) => (
-          <img
-            key={index}
-            src={image}
-            alt="Hero Banner"
-            fetchPriority={index === 0 ? "high" : "auto"}
-            loading={index === 0 ? "eager" : "lazy"}
-            decoding={index === 0 ? "sync" : "async"}
-            width="1200"
-            height="800"
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-              index === currentIndex ? "opacity-100" : "opacity-0"
-            }`}
-          />
-      ))}
+      {bannerImages.map((image: string, index: number) => {
+        const isFirst = index === 0;
+        return (
+          <picture key={index} className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${
+            index === currentIndex ? "opacity-100" : "opacity-0"
+          }`}>
+            {isFirst && <source media="(max-width: 640px)" srcSet="/hero-mobile.webp" type="image/webp" />}
+            <img
+              src={image}
+              alt="Hero Banner"
+              fetchPriority={isFirst ? "high" : "auto"}
+              loading={isFirst ? "eager" : "lazy"}
+              decoding={isFirst ? "sync" : "async"}
+              width="1200"
+              height="800"
+              className="w-full h-full object-cover"
+            />
+          </picture>
+        );
+      })}
       <div className="absolute inset-0 bg-gradient-to-r from-background/90 to-background/40" />
       
       <div className={`relative z-10 text-center max-w-3xl px-4 transition-opacity duration-700 ${isLoading ? 'opacity-0' : 'opacity-100 animate-fade-in'}`}>
