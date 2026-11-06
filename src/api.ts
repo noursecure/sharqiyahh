@@ -224,7 +224,32 @@ export const updateSettings = async (settings: Record<string, string>): Promise<
 };
 
 export const createOrder = async (orderData: any): Promise<{ success: boolean }> => {
-    // Security check: Recalculate true prices from database to prevent Client-Side tampering
+    // 1. Rate Limiting Check: Prevent spamming orders from the same device/browser
+    const LAST_ORDER_KEY = "sharqiyah_last_order_ts";
+    const ORDER_COUNT_KEY = "sharqiyah_order_window";
+    const now = Date.now();
+    
+    // Cooldown check (minimum 30 seconds between consecutive orders)
+    const lastOrderTs = Number(localStorage.getItem(LAST_ORDER_KEY) || 0);
+    if (now - lastOrderTs < 30 * 1000) {
+        const remainingSeconds = Math.ceil((30 * 1000 - (now - lastOrderTs)) / 1000);
+        throw new Error(`يرجى الانتظار ${remainingSeconds} ثانية قبل إرسال طلب جديد.`);
+    }
+
+    // Window check (maximum 3 orders per 10 minutes)
+    let orderHistory: number[] = [];
+    try {
+        orderHistory = JSON.parse(localStorage.getItem(ORDER_COUNT_KEY) || "[]");
+    } catch {
+        orderHistory = [];
+    }
+    // Filter orders in last 10 minutes
+    orderHistory = orderHistory.filter((ts) => now - ts < 10 * 60 * 1000);
+    if (orderHistory.length >= 3) {
+        throw new Error("لقد قمت بإرسال عدة طلبات مؤخراً. يرجى الانتظار بضع دقائق أو التواصل معنا عبر واتساب.");
+    }
+
+    // 2. Database Price Security Check: Recalculate true prices from database to prevent Client-Side tampering
     const itemIds = (orderData.items || []).map((i: any) => i.id);
     let calculatedSubtotal = 0;
     const validatedItems = [];
@@ -236,7 +261,7 @@ export const createOrder = async (orderData: any): Promise<{ success: boolean }>
             .in('id', itemIds);
 
         if (prodError || !dbProducts) {
-            throw new Error('Failed to verify product prices');
+            throw new Error('فشل التحقق من أسعار المنتجات. يرجى المحاولة لاحقاً.');
         }
 
         const productMap = new Map<string, any>(dbProducts.map(p => [p.id, p]));
@@ -244,7 +269,7 @@ export const createOrder = async (orderData: any): Promise<{ success: boolean }>
         for (const item of orderData.items) {
             const dbProd = productMap.get(item.id);
             if (!dbProd) {
-                throw new Error(`Product ${item.name || item.id} no longer exists`);
+                throw new Error(`المنتج ${item.name || item.id} لم يعد متوفراً`);
             }
             const quantity = Math.max(1, Number(item.quantity) || 1);
             const verifiedPrice = Number(dbProd.price);
@@ -278,6 +303,16 @@ export const createOrder = async (orderData: any): Promise<{ success: boolean }>
         items: validatedItems
     }]);
     if (error) throw error;
+
+    // Record successful order timestamp for Rate Limiting
+    try {
+        localStorage.setItem(LAST_ORDER_KEY, String(Date.now()));
+        orderHistory.push(Date.now());
+        localStorage.setItem(ORDER_COUNT_KEY, JSON.stringify(orderHistory));
+    } catch {
+        // Safe fallback if storage quota restricted
+    }
+
     return { success: true };
 };
 

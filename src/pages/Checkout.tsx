@@ -73,11 +73,11 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
       });
       onClearCart();
       navigate("/");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Order error", error);
       toast({
         title: "Order Failed",
-        description: "There was an issue placing your order. Please try again.",
+        description: error?.message || "There was an issue placing your order. Please try again.",
         variant: "destructive"
       });
     } finally {
