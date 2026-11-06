@@ -224,6 +224,48 @@ export const updateSettings = async (settings: Record<string, string>): Promise<
 };
 
 export const createOrder = async (orderData: any): Promise<{ success: boolean }> => {
+    // Security check: Recalculate true prices from database to prevent Client-Side tampering
+    const itemIds = (orderData.items || []).map((i: any) => i.id);
+    let calculatedSubtotal = 0;
+    const validatedItems = [];
+
+    if (itemIds.length > 0) {
+        const { data: dbProducts, error: prodError } = await supabase
+            .from('products')
+            .select('id, name, price, stock, image')
+            .in('id', itemIds);
+
+        if (prodError || !dbProducts) {
+            throw new Error('Failed to verify product prices');
+        }
+
+        const productMap = new Map<string, any>(dbProducts.map(p => [p.id, p]));
+
+        for (const item of orderData.items) {
+            const dbProd = productMap.get(item.id);
+            if (!dbProd) {
+                throw new Error(`Product ${item.name || item.id} no longer exists`);
+            }
+            const quantity = Math.max(1, Number(item.quantity) || 1);
+            const verifiedPrice = Number(dbProd.price);
+
+            calculatedSubtotal += verifiedPrice * quantity;
+
+            validatedItems.push({
+                id: dbProd.id,
+                name: dbProd.name,
+                price: verifiedPrice,
+                quantity: quantity,
+                image: dbProd.image || item.image,
+                size: item.size || null
+            });
+        }
+    }
+
+    // Official business shipping rules: Free shipping over $200, otherwise $15
+    const shipping = calculatedSubtotal > 200 ? 0 : 15;
+    const verifiedTotal = calculatedSubtotal + shipping;
+
     const { error } = await supabase.from('orders').insert([{
         first_name: orderData.firstName,
         last_name: orderData.lastName,
@@ -232,8 +274,8 @@ export const createOrder = async (orderData: any): Promise<{ success: boolean }>
         address: orderData.address,
         city: orderData.city,
         region: orderData.region,
-        total: orderData.total,
-        items: orderData.items
+        total: verifiedTotal,
+        items: validatedItems
     }]);
     if (error) throw error;
     return { success: true };
