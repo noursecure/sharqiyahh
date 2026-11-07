@@ -27,6 +27,12 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCity, setSelectedCity] = useState("Beirut");
+  // Stable idempotency key per checkout attempt to prevent double-clicks & retried duplicates
+  const [idempotencyKey] = useState<string>(() => {
+    return (typeof crypto !== "undefined" && crypto.randomUUID) 
+      ? crypto.randomUUID() 
+      : 'order-' + Math.random().toString(36).substring(2, 15) + '-' + Date.now();
+  });
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = subtotal > 200 ? 0 : 15;
@@ -34,6 +40,7 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent double submit
     setIsSubmitting(true);
 
     // Gather form data (a simplified approach, ideally use react-hook-form)
@@ -53,10 +60,11 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
     if (deliveryNotes) fullAddress += ` [Note: ${deliveryNotes}]`;
 
     const orderData = {
-      firstName: formData.get("firstName") || "Guest",
-      lastName: formData.get("lastName") || "User",
+      idempotencyKey,
+      firstName: (formData.get("firstName") as string)?.trim() || "Guest",
+      lastName: (formData.get("lastName") as string)?.trim() || "User",
       email: emailValue || "customer@sharqiyahh.com",
-      phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
+      phone: ((form.elements.namedItem("phone") as HTMLInputElement).value || "").trim(),
       address: fullAddress,
       city: selectedCity,
       region: landmark || "",

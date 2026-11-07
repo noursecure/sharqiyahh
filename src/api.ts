@@ -223,97 +223,115 @@ export const updateSettings = async (settings: Record<string, string>): Promise<
     return { success: true };
 };
 
-export const createOrder = async (orderData: any): Promise<{ success: boolean }> => {
-    // 1. Rate Limiting Check: Prevent spamming orders from the same device/browser
-    const LAST_ORDER_KEY = "sharqiyah_last_order_ts";
-    const ORDER_COUNT_KEY = "sharqiyah_order_window";
-    const now = Date.now();
-    
-    // Cooldown check (minimum 30 seconds between consecutive orders)
-    const lastOrderTs = Number(localStorage.getItem(LAST_ORDER_KEY) || 0);
-    if (now - lastOrderTs < 30 * 1000) {
-        const remainingSeconds = Math.ceil((30 * 1000 - (now - lastOrderTs)) / 1000);
-        throw new Error(`يرجى الانتظار ${remainingSeconds} ثانية قبل إرسال طلب جديد.`);
-    }
-
-    // Window check (maximum 3 orders per 10 minutes)
-    let orderHistory: number[] = [];
+export const createOrder = async (orderData: any): Promise<{ success: boolean; orderId?: string; total?: number }> => {
+    // 1. Primary Secure Path: Send order through the secure serverless backend endpoint
     try {
-        orderHistory = JSON.parse(localStorage.getItem(ORDER_COUNT_KEY) || "[]");
-    } catch {
-        orderHistory = [];
-    }
-    // Filter orders in last 10 minutes
-    orderHistory = orderHistory.filter((ts) => now - ts < 10 * 60 * 1000);
-    if (orderHistory.length >= 3) {
-        throw new Error("لقد قمت بإرسال عدة طلبات مؤخراً. يرجى الانتظار بضع دقائق أو التواصل معنا عبر واتساب.");
-    }
+        const response = await fetch('/api/order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(orderData.idempotencyKey ? { 'Idempotency-Key': orderData.idempotencyKey } : {})
+            },
+            body: JSON.stringify({
+                idempotencyKey: orderData.idempotencyKey,
+                firstName: orderData.firstName,
+                lastName: orderData.lastName,
+                email: orderData.email || '',
+                phone: orderData.phone,
+                address: orderData.address,
+                city: orderData.city,
+                region: orderData.region || '',
+                items: (orderData.items || []).map((item: any) => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    size: item.size || null,
+                    image: item.image || null
+                }))
+            })
+        });
 
-    // 2. Database Price Security Check: Recalculate true prices from database to prevent Client-Side tampering
-    const itemIds = (orderData.items || []).map((i: any) => i.id);
-    let calculatedSubtotal = 0;
-    const validatedItems = [];
+        const result = await response.json().catch(() => ({}));
 
-    if (itemIds.length > 0) {
-        const { data: dbProducts, error: prodError } = await supabase
-            .from('products')
-            .select('id, name, price, stock, image')
-            .in('id', itemIds);
-
-        if (prodError || !dbProducts) {
-            throw new Error('فشل التحقق من أسعار المنتجات. يرجى المحاولة لاحقاً.');
+        if (!response.ok) {
+            throw new Error(result.error || `فشل إنشاء الطلب (رمز الخطأ: ${response.status})`);
         }
 
-        const productMap = new Map<string, any>(dbProducts.map(p => [p.id, p]));
+        return {
+            success: true,
+            orderId: result.orderId,
+            total: result.total
+        };
+    } catch (backendError: any) {
+        // If the backend returned a 4xx error (rate limit, validation error, product out of stock), throw it directly
+        if (backendError.message && !backendError.message.includes('Failed to fetch') && !backendError.message.includes('404')) {
+            throw backendError;
+        }
 
-        for (const item of orderData.items) {
-            const dbProd = productMap.get(item.id);
-            if (!dbProd) {
-                throw new Error(`المنتج ${item.name || item.id} لم يعد متوفراً`);
+        console.warn('[Checkout]: Serverless endpoint unreachable, using client fallback', backendError);
+
+        // 2. Safe Fallback for local Vite dev / direct environments:
+        // Calculate verified prices directly from database
+        const itemIds = (orderData.items || []).map((i: any) => i.id);
+        let calculatedSubtotal = 0;
+        const validatedItems = [];
+
+        if (itemIds.length > 0) {
+            const { data: dbProducts, error: prodError } = await supabase
+                .from('products')
+                .select('id, name, price, stock, image')
+                .in('id', itemIds);
+
+            if (prodError || !dbProducts) {
+                throw new Error('فشل التحقق من أسعار المنتجات. يرجى المحاولة لاحقاً.');
             }
-            const quantity = Math.max(1, Number(item.quantity) || 1);
-            const verifiedPrice = Number(dbProd.price);
 
-            calculatedSubtotal += verifiedPrice * quantity;
+            const productMap = new Map<string, any>(dbProducts.map(p => [p.id, p]));
 
-            validatedItems.push({
-                id: dbProd.id,
-                name: dbProd.name,
-                price: verifiedPrice,
-                quantity: quantity,
-                image: dbProd.image || item.image,
-                size: item.size || null
-            });
+            for (const item of orderData.items) {
+                const dbProd = productMap.get(item.id);
+                if (!dbProd) {
+                    throw new Error(`المنتج ${item.name || item.id} لم يعد متوفراً`);
+                }
+                const quantity = Math.max(1, Number(item.quantity) || 1);
+                const verifiedPrice = Number(dbProd.price);
+
+                calculatedSubtotal += verifiedPrice * quantity;
+
+                validatedItems.push({
+                    id: dbProd.id,
+                    name: dbProd.name,
+                    price: verifiedPrice,
+                    quantity: quantity,
+                    image: dbProd.image || item.image,
+                    size: item.size || null
+                });
+            }
         }
+
+        const shipping = calculatedSubtotal > 200 ? 0 : 15;
+        const verifiedTotal = calculatedSubtotal + shipping;
+
+        const orderRecord: any = {
+            first_name: orderData.firstName,
+            last_name: orderData.lastName,
+            email: orderData.email,
+            phone: orderData.phone,
+            address: orderData.address,
+            city: orderData.city,
+            region: orderData.region,
+            total: verifiedTotal,
+            items: validatedItems
+        };
+
+        if (orderData.idempotencyKey) {
+            orderRecord.idempotency_key = orderData.idempotencyKey;
+        }
+
+        const { data: newOrder, error } = await supabase.from('orders').insert([orderRecord]).select().single();
+        if (error) throw error;
+        return { success: true, orderId: newOrder?.id, total: verifiedTotal };
     }
-
-    // Official business shipping rules: Free shipping over $200, otherwise $15
-    const shipping = calculatedSubtotal > 200 ? 0 : 15;
-    const verifiedTotal = calculatedSubtotal + shipping;
-
-    const { error } = await supabase.from('orders').insert([{
-        first_name: orderData.firstName,
-        last_name: orderData.lastName,
-        email: orderData.email,
-        phone: orderData.phone,
-        address: orderData.address,
-        city: orderData.city,
-        region: orderData.region,
-        total: verifiedTotal,
-        items: validatedItems
-    }]);
-    if (error) throw error;
-
-    // Record successful order timestamp for Rate Limiting
-    try {
-        localStorage.setItem(LAST_ORDER_KEY, String(Date.now()));
-        orderHistory.push(Date.now());
-        localStorage.setItem(ORDER_COUNT_KEY, JSON.stringify(orderHistory));
-    } catch {
-        // Safe fallback if storage quota restricted
-    }
-
-    return { success: true };
 };
 
 export const getOrders = async () => {
