@@ -81,11 +81,12 @@ const Checkout = ({ items, onClearCart }: CheckoutProps) => {
       });
       onClearCart();
       navigate("/");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Order error", error);
+      const errorMessage = error instanceof Error ? error.message : "There was an issue placing your order. Please try again.";
       toast({
         title: "Order Failed",
-        description: error?.message || "There was an issue placing your order. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {

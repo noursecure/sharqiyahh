@@ -28,3 +28,32 @@ export interface APIProduct extends Omit<Product, 'price' | 'originalPrice' | 's
     originalPrice?: number | null;
     stock: number;
 }
+
+export interface OrderItem {
+    id: string;
+    productName?: string;
+    name?: string;
+    price: number;
+    quantity: number;
+    size?: string | null;
+    image?: string | null;
+}
+
+export interface Order {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    region?: string;
+    total: number;
+    items: OrderItem[];
+    status: string;
+    trackingNumber?: string | null;
+    labelUrl?: string | null;
+    shipmentStatus?: string | null;
+    createdAt: string;
+}
+

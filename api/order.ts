@@ -21,7 +21,7 @@ const CreateOrderSchema = z.object({
   lastName: z.string().trim().min(1, "Last name is required").max(60, "Last name too long"),
   email: z.string().trim().email("Invalid email address").max(120).or(z.literal("")).optional(),
   phone: z.string().trim().refine((val) => {
-    const cleaned = val.replace(/[\s\-\(\)\.]/g, '');
+    const cleaned = val.replace(/[\s\-().]/g, '');
     return lebanesePhoneRegex.test(cleaned);
   }, {
     message: "يرجى إدخال رقم هاتف لبناني صحيح (مثال: 70123456 أو 03123456)"
@@ -44,7 +44,7 @@ function getClientIp(req: VercelRequest): string {
 }
 
 function normalizePhone(rawPhone: string): string {
-  let cleaned = rawPhone.replace(/[\s\-\(\)\.]/g, '');
+  let cleaned = rawPhone.replace(/[\s\-().]/g, '');
   if (cleaned.startsWith('+961')) cleaned = cleaned.slice(4);
   else if (cleaned.startsWith('00961')) cleaned = cleaned.slice(5);
   else if (cleaned.startsWith('961')) cleaned = cleaned.slice(3);
@@ -193,7 +193,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const authoritativeTotal = Math.round((calculatedSubtotal + shipping) * 100) / 100;
 
     // 6. Atomic Order Record Creation
-    const orderRecord: Record<string, any> = {
+    const orderRecord: Record<string, unknown> = {
       first_name: payload.firstName,
       last_name: payload.lastName,
       email: payload.email || 'customer@sharqiyahh.com',
@@ -246,8 +246,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       total: authoritativeTotal
     });
 
-  } catch (error: any) {
-    console.error('[Unhandled Order Error]:', error);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[Unhandled Order Error]:', errorMsg);
     return res.status(500).json({ error: 'حدث خطأ غير متوقع أثناء معالجة الطلب.' });
   }
 }

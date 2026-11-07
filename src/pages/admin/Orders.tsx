@@ -23,7 +23,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { format } from "date-fns";
+import { formatBeirutDateTime } from "@/lib/utils";
+import type { Order, OrderItem } from "@/types";
 
 // Removed old Axios wrappers since we are importing them directly from "@/api"
 
@@ -32,7 +33,7 @@ export default function AdminOrders() {
     const [searchTerm, setSearchTerm] = useState("");
     const [shippingOrderId, setShippingOrderId] = useState<string | null>(null);
 
-    const handleSendToDelivery = async (order: any) => {
+    const handleSendToDelivery = async (order: Order) => {
         try {
             setShippingOrderId(order.id);
             toast.info("Creating shipment with Net Global for Order #" + order.id.slice(0, 8) + "...");
@@ -41,7 +42,7 @@ export default function AdminOrders() {
             const firstItem = order.items && order.items[0];
             const itemDesc = order.items && order.items.length > 1
                 ? order.items.length + " items (Sharqiyah Modest Fashion)"
-                : (firstItem ? firstItem.productName : "Sharqiyah Abaya / Dress");
+                : (firstItem ? (firstItem.productName || firstItem.name || "Product") : "Sharqiyah Abaya / Dress");
 
             const res = await createNetShipment({
                 orderId: order.id,
@@ -67,15 +68,16 @@ export default function AdminOrders() {
             } else {
                 toast.error(res.error || 'Failed to create shipment with carrier');
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const errorMsg = err instanceof Error ? err.message : 'Error communicating with Net Global API';
             console.error('Shipment error:', err);
-            toast.error(err.message || 'Error communicating with Net Global API');
+            toast.error(errorMsg);
         } finally {
             setShippingOrderId(null);
         }
     };
 
-    const { data: orders, isLoading } = useQuery({
+    const { data: orders, isLoading } = useQuery<Order[]>({
         queryKey: ["orders"],
         queryFn: getOrders,
         refetchInterval: 10000 // Poll every 10s for new orders
@@ -113,15 +115,15 @@ export default function AdminOrders() {
         }
     };
 
-    const handleWhatsAppShare = (order: any) => {
+    const handleWhatsAppShare = (order: Order) => {
         let itemsList = "";
-        order.items.forEach((item: any) => {
-            itemsList += `\n- ${item.quantity}x ${item.productName} ($${item.price})`;
+        order.items.forEach((item: OrderItem) => {
+            itemsList += `\n- ${item.quantity}x ${item.productName || item.name || 'Item'} ($${item.price})`;
         });
 
         const message = `Hello, ${order.firstName} ${order.lastName}.
 Here is your order summary for Order #${order.id.slice(0, 8).toUpperCase()}.
-Date: ${new Date(order.createdAt).toLocaleDateString()}
+Date: ${formatBeirutDateTime(order.createdAt)}
 
 Items:${itemsList}
 
@@ -136,7 +138,7 @@ Thank you for shopping with Sharqiyah!`;
         window.open(url, '_blank');
     };
 
-    const filteredOrders = orders?.filter((order: any) => {
+    const filteredOrders = orders?.filter((order: Order) => {
         const searchLower = searchTerm.toLowerCase();
         return (
             order.id.toLowerCase().includes(searchLower) ||
@@ -173,7 +175,7 @@ Thank you for shopping with Sharqiyah!`;
 
             {/* Mobile Orders View (Cards for mobile screens) */}
             <div className="grid grid-cols-1 gap-4 md:hidden">
-                {filteredOrders?.map((order: any) => (
+                {filteredOrders?.map((order: Order) => (
                     <div key={order.id} className="bg-card rounded-lg border shadow-sm p-4 space-y-3">
                         <div className="flex items-center justify-between border-b pb-2">
                             <div>
@@ -205,7 +207,7 @@ Thank you for shopping with Sharqiyah!`;
                                 <div className="text-xs text-muted-foreground">Total & Date</div>
                                 <div className="text-lg font-bold text-primary">${order.total?.toFixed(2)}</div>
                                 <div className="text-[11px] text-muted-foreground">
-                                    {format(new Date(order.createdAt), "dd/MM/yyyy HH:mm")}
+                                    {formatBeirutDateTime(order.createdAt)}
                                 </div>
                             </div>
                         </div>
@@ -220,9 +222,9 @@ Thank you for shopping with Sharqiyah!`;
                         <div className="border-t pt-2">
                             <div className="text-xs font-semibold text-muted-foreground mb-1">Items ({order.items?.length || 0}):</div>
                             <div className="space-y-1 bg-muted/20 p-2 rounded text-xs">
-                                {order.items?.map((item: any) => (
+                                {order.items?.map((item: OrderItem) => (
                                     <div key={item.id} className="flex justify-between">
-                                        <span className="font-medium">{item.quantity}x {item.productName}</span>
+                                        <span className="font-medium">{item.quantity}x {item.productName || item.name}</span>
                                         {item.size && <span className="text-muted-foreground">Size: {item.size}</span>}
                                     </div>
                                 ))}
@@ -321,7 +323,7 @@ Thank you for shopping with Sharqiyah!`;
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredOrders?.map((order: any) => (
+                        {filteredOrders?.map((order: Order) => (
                             <TableRow key={order.id}>
                                 <TableCell className="font-mono text-xs">{order.id.slice(0, 8)}</TableCell>
                                 <TableCell>
@@ -329,7 +331,7 @@ Thank you for shopping with Sharqiyah!`;
                                     <div className="text-xs text-muted-foreground">{order.email}</div>
                                     <div className="text-xs text-muted-foreground">{order.phone}</div>
                                 </TableCell>
-                                <TableCell>{format(new Date(order.createdAt), "dd/MM/yyyy HH:mm")}</TableCell>
+                                <TableCell>{formatBeirutDateTime(order.createdAt)}</TableCell>
                                 <TableCell className="font-bold">${order.total?.toFixed(2)}</TableCell>
                                                                 <TableCell>
                                     <Badge variant={
@@ -382,9 +384,9 @@ Thank you for shopping with Sharqiyah!`;
                                 </TableCell>
                                 <TableCell>
                                     <div className="max-w-[200px] text-xs">
-                                        {order.items?.map((item: any) => (
+                                        {order.items?.map((item: OrderItem) => (
                                             <div key={item.id} className="truncate">
-                                                {item.quantity}x {item.productName}
+                                                {item.quantity}x {item.productName || item.name}
                                             </div>
                                         ))}
                                     </div>
